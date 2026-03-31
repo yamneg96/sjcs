@@ -17,7 +17,7 @@ export default function HomePage() {
         </div>
         <div className="container mx-auto px-8 relative z-10">
           <div className="max-w-2xl">
-            <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-sjcs-primary-fixed text-sjcs-on-primary-fixed font-label text-xs font-bold tracking-[0.1em] uppercase">
+            <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-sjcs-primary-fixed text-sjcs-on-primary-fixed font-label text-xs font-bold tracking-widest uppercase">
               Excellence in Leadership
             </div>
             <h1 className="font-headline text-6xl md:text-7xl font-extrabold text-sjcs-on-surface tracking-tight leading-tight mb-8">
@@ -241,7 +241,7 @@ export default function HomePage() {
                     alt={item.title}
                     src={item.img}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#191c1d]/90 to-transparent p-8 flex flex-col justify-end">
+                  <div className="absolute inset-0 bg-linear-to-t from-[#191c1d]/90 to-transparent p-8 flex flex-col justify-end">
                     <span
                       className={`${item.color} font-bold text-xs tracking-widest uppercase mb-2`}
                     >

@@ -44,9 +44,13 @@ export default function DashboardPage() {
         {/* Main Content */}
         <div className="md:col-span-8 flex flex-col gap-8">
           <div className="bg-sjcs-surface-container-lowest rounded-xl overflow-hidden shadow-ambient flex flex-col md:flex-row min-h-[320px]">
-            <div className="md:w-1/2 relative overflow-hidden h-64 md:h-auto">
-              <img alt="Student workspace" className="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPR4PBLFEGjgSV3Wq36ayszNnNssL-X9t7Q2gU3LrX_bIGgF4swGdnIQVORumWtjFpZVTVP_GpJOmGxnaZcy1Yhu92CWLhwCx2iNLVlPmFqujsqsvlmLsFdOwxNfKj4sekq1WMFq4aPZFUk4kUazRKFxJgXTOmuiRPh84L1LhuO2LyqXREiLGXwIZXcZOH_xh7pvhvhU3sKOo1rQkezokNZciBye6o6NXFL7SDUgjhoQAuovizdUIzKsgMIZ9Cb-FkELbXAMNzVKG2" />
-              <div className="absolute inset-0 bg-gradient-to-t from-sjcs-primary/20 to-transparent"></div>
+            <div className="relative aspect-video rounded-3xl overflow-hidden group">
+              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgRxp2CB9bW8a0ZiOqKxiogbzTNLVswLe6w1w3gOQFA6o-jkqy6lkwR3VcOe97OeYkC0DrifcLeDa5SjBX70uGq8XJKsUBNdYrEgHxnP1yuJnDTxPkv6P5sr3G8vcsfKjNHmvmItJ2O4H7sR82ehj73Q1Cv5mEEcQErLIHGXX_i7js3Y4Zvg2RORr5vUBnnLYMRr2TtwL9w6lC7csyg1T3M-a8guKUZG01es2C-5-tuxaTEtU5XDBCqpOKLJksBsiadfz_6fJnIgOo" alt="School News" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+              <div className="absolute inset-0 bg-linear-to-t from-sjcs-primary/20 to-transparent"></div>
+              <div className="absolute bottom-0 left-0 p-8">
+                <span className="px-3 py-1 bg-sjcs-primary text-white rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block">Featured Update</span>
+                <h3 className="text-2xl font-headline font-bold text-white max-w-sm">SJCS Robotics Team Advances to State Finals</h3>
+              </div>
             </div>
             <div className="md:w-1/2 p-8 flex flex-col justify-center">
               <div className="flex items-center gap-2 mb-4">

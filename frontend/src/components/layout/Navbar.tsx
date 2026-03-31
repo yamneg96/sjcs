@@ -52,7 +52,7 @@ export function Navbar() {
             onClick={() => setIsMobileMenuOpen(false)}
           >
             <img src="/logo.png" alt="SJCS Logo" className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 rounded-full" />
-            <span className="text-xl md:text-2xl font-black tracking-tighter text-[#af101a] dark:text-[#ff4d5a] font-headline">
+            <span className="text-xl md:text-2xl font-black tracking-tighter text-sjcs-primary dark:text-[#ff4d5a] font-headline">
               Saint Joseph Catholic School
             </span>
           </Link>
@@ -65,7 +65,7 @@ export function Navbar() {
                 to={link.to}
                 activeProps={{
                   className:
-                    "text-[#af101a] border-b-2 border-[#af101a] pb-1 font-headline font-bold tracking-tight",
+                    "text-sjcs-primary border-b-2 border-sjcs-primary pb-1 font-headline font-bold tracking-tight",
                 }}
                 inactiveProps={{
                   className:

@@ -74,7 +74,7 @@ export default function AboutPage() {
           <div className="lg:w-1/2 relative">
             <div className="absolute -top-8 -left-8 w-64 h-64 leadership-gradient opacity-10 rounded-full blur-3xl"></div>
             <div className="relative rounded-xl overflow-hidden shadow-2xl">
-              <img className="w-full aspect-[4/5] object-cover" alt="Dr. Helena Rossi, Head of School" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWowmmQs4_JYrgKO-mv8lh-iEeyOwklW33WxNVDlXNxQVzVxzbc05EEfXvdH4PlH6fSkUw-3i6k9yvgMomS6l_QTdM9Qpd26bOSv8u755zj3n-280hzBJn8q_n6pPLk40VVHlOHm0FnAZMPly3CCiuMISxWMhEG_qC9vK4kFsEeRLTGHmJCIkedd0Nu8EKOLguHvo_V0ObiGKf0owNvctXAte3R46y14R8kDbt7o6StIlYPdu3_Gb6WZG2Dfw6SZ3cLrTx3ibRyUYv" />
+              <img className="w-full aspect-4/5 object-cover" alt="Dr. Helena Rossi, Head of School" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWowmmQs4_JYrgKO-mv8lh-iEeyOwklW33WxNVDlXNxQVzVxzbc05EEfXvdH4PlH6fSkUw-3i6k9yvgMomS6l_QTdM9Qpd26bOSv8u755zj3n-280hzBJn8q_n6pPLk40VVHlOHm0FnAZMPly3CCiuMISxWMhEG_qC9vK4kFsEeRLTGHmJCIkedd0Nu8EKOLguHvo_V0ObiGKf0owNvctXAte3R46y14R8kDbt7o6StIlYPdu3_Gb6WZG2Dfw6SZ3cLrTx3ibRyUYv" />
             </div>
             <div className="absolute -bottom-10 -right-10 bg-white p-8 rounded-xl shadow-xl max-w-xs">
               <p className="font-headline font-extrabold text-sjcs-primary text-xl">Dr. Helena Rossi</p>
