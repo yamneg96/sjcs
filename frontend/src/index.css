@@ -1,0 +1,291 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/manrope";
+@import "@fontsource-variable/inter";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   SJCS Design System — "The Modern Scholastic"
+   Based on DESIGN.md + Material Design-inspired palette from code.html
+   ============================================================ */
+
+@theme inline {
+    /* --- Font Families --- */
+    --font-heading: 'Manrope Variable', 'Manrope', sans-serif;
+    --font-sans: 'Inter Variable', 'Inter', sans-serif;
+    --font-headline: 'Manrope Variable', 'Manrope', sans-serif;
+    --font-body: 'Inter Variable', 'Inter', sans-serif;
+    --font-label: 'Inter Variable', 'Inter', sans-serif;
+
+    /* --- ShadCN Color Mappings --- */
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+
+    /* --- SJCS Material Design Color Tokens --- */
+    --color-sjcs-primary: #af101a;
+    --color-sjcs-secondary: #005faf;
+    --color-sjcs-tertiary: #2153ad;
+    --color-sjcs-error: #ba1a1a;
+
+    --color-sjcs-surface: #f8f9fa;
+    --color-sjcs-surface-dim: #d9dadb;
+    --color-sjcs-surface-bright: #f8f9fa;
+    --color-sjcs-surface-variant: #e1e3e4;
+    --color-sjcs-surface-tint: #ba1a20;
+    --color-sjcs-surface-container-lowest: #ffffff;
+    --color-sjcs-surface-container-low: #f3f4f5;
+    --color-sjcs-surface-container: #edeeef;
+    --color-sjcs-surface-container-high: #e7e8e9;
+    --color-sjcs-surface-container-highest: #e1e3e4;
+    --color-sjcs-background: #f8f9fa;
+
+    --color-sjcs-on-surface: #191c1d;
+    --color-sjcs-on-surface-variant: #5b403d;
+    --color-sjcs-on-background: #191c1d;
+    --color-sjcs-on-primary: #ffffff;
+    --color-sjcs-on-secondary: #ffffff;
+    --color-sjcs-on-tertiary: #ffffff;
+    --color-sjcs-on-error: #ffffff;
+
+    --color-sjcs-primary-container: #d32f2f;
+    --color-sjcs-on-primary-container: #fff2f0;
+    --color-sjcs-primary-fixed: #ffdad6;
+    --color-sjcs-primary-fixed-dim: #ffb3ac;
+    --color-sjcs-on-primary-fixed: #410003;
+    --color-sjcs-on-primary-fixed-variant: #930010;
+
+    --color-sjcs-secondary-container: #54a0fe;
+    --color-sjcs-on-secondary-container: #003567;
+    --color-sjcs-secondary-fixed: #d4e3ff;
+    --color-sjcs-secondary-fixed-dim: #a5c8ff;
+    --color-sjcs-on-secondary-fixed: #001c3a;
+    --color-sjcs-on-secondary-fixed-variant: #004786;
+
+    --color-sjcs-tertiary-container: #406cc7;
+    --color-sjcs-on-tertiary-container: #f2f3ff;
+    --color-sjcs-tertiary-fixed: #d9e2ff;
+    --color-sjcs-tertiary-fixed-dim: #b0c6ff;
+    --color-sjcs-on-tertiary-fixed: #001945;
+    --color-sjcs-on-tertiary-fixed-variant: #00429c;
+
+    --color-sjcs-error-container: #ffdad6;
+    --color-sjcs-on-error-container: #93000a;
+
+    --color-sjcs-outline: #8f6f6c;
+    --color-sjcs-outline-variant: #e4beba;
+
+    --color-sjcs-inverse-surface: #2e3132;
+    --color-sjcs-inverse-on-surface: #f0f1f2;
+    --color-sjcs-inverse-primary: #ffb3ac;
+
+    /* --- Border Radius --- */
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ============================================================
+   Light Theme (Default)
+   ============================================================ */
+:root {
+    --background: #f8f9fa;
+    --foreground: #191c1d;
+    --card: #ffffff;
+    --card-foreground: #191c1d;
+    --popover: #ffffff;
+    --popover-foreground: #191c1d;
+    --primary: #af101a;
+    --primary-foreground: #ffffff;
+    --secondary: #005faf;
+    --secondary-foreground: #ffffff;
+    --muted: #edeeef;
+    --muted-foreground: #5b403d;
+    --accent: #f3f4f5;
+    --accent-foreground: #191c1d;
+    --destructive: #ba1a1a;
+    --border: #e4beba;
+    --input: #f3f4f5;
+    --ring: #af101a;
+    --chart-1: #af101a;
+    --chart-2: #005faf;
+    --chart-3: #2153ad;
+    --chart-4: #54a0fe;
+    --chart-5: #d32f2f;
+    --radius: 0.75rem;
+    --sidebar: #f8f9fa;
+    --sidebar-foreground: #191c1d;
+    --sidebar-primary: #af101a;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #f3f4f5;
+    --sidebar-accent-foreground: #191c1d;
+    --sidebar-border: #e4beba;
+    --sidebar-ring: #af101a;
+}
+
+/* ============================================================
+   Dark Theme
+   ============================================================ */
+.dark {
+    --background: #191c1d;
+    --foreground: #e1e3e4;
+    --card: #2e3132;
+    --card-foreground: #e1e3e4;
+    --popover: #2e3132;
+    --popover-foreground: #e1e3e4;
+    --primary: #ffb3ac;
+    --primary-foreground: #690007;
+    --secondary: #a5c8ff;
+    --secondary-foreground: #003567;
+    --muted: #2e3132;
+    --muted-foreground: #a0a1a2;
+    --accent: #2e3132;
+    --accent-foreground: #e1e3e4;
+    --destructive: #ffb4ab;
+    --border: #5b403d;
+    --input: #2e3132;
+    --ring: #ffb3ac;
+    --chart-1: #ffb3ac;
+    --chart-2: #a5c8ff;
+    --chart-3: #b0c6ff;
+    --chart-4: #54a0fe;
+    --chart-5: #ff4d5a;
+    --sidebar: #2e3132;
+    --sidebar-foreground: #e1e3e4;
+    --sidebar-primary: #ffb3ac;
+    --sidebar-primary-foreground: #690007;
+    --sidebar-accent: #191c1d;
+    --sidebar-accent-foreground: #e1e3e4;
+    --sidebar-border: #5b403d;
+    --sidebar-ring: #ffb3ac;
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground antialiased;
+        font-family: 'Inter Variable', 'Inter', sans-serif;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    ::selection {
+        background-color: #ffdad6;
+        color: #410003;
+    }
+}
+
+/* ============================================================
+   SJCS Utility Classes
+   ============================================================ */
+@layer utilities {
+    /* Leadership Gradient — Primary CTA, Hero backgrounds */
+    .leadership-gradient {
+        background: linear-gradient(135deg, #af101a 0%, #005faf 100%);
+    }
+
+    /* Ambient shadow — per DESIGN.md: 6% opacity, 40px blur */
+    .shadow-ambient {
+        box-shadow: 0 10px 40px rgba(25, 28, 29, 0.06);
+    }
+
+    /* Ghost border — outline-variant at 20% opacity */
+    .border-ghost {
+        border: 1px solid rgba(228, 190, 186, 0.2);
+    }
+
+    /* Glassmorphism — for nav and modals */
+    .glass {
+        background: rgba(248, 249, 250, 0.8);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    .glass-dark {
+        background: rgba(25, 28, 29, 0.8);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* Smooth professional transitions */
+    .transition-smooth {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Typography tokens from DESIGN.md */
+    .text-display-lg {
+        font-family: 'Manrope Variable', 'Manrope', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+    }
+
+    .text-headline-md {
+        font-family: 'Manrope Variable', 'Manrope', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .text-title-lg {
+        font-family: 'Inter Variable', 'Inter', sans-serif;
+        font-size: 1.375rem;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+
+    .text-body-lg {
+        font-family: 'Inter Variable', 'Inter', sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.6;
+    }
+
+    .text-label-md {
+        font-family: 'Inter Variable', 'Inter', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+}
