@@ -1,33 +1,48 @@
-// export const askSupportAI = async (question: string) => {
-//   // 1. Embed question
-//   const queryEmbedding = await embedText(question);
+import { SupportDoc } from "./support-rag.model";
+import { RAGService } from "../rag/rag.service";
 
-//   // 2. Fetch docs (no grade filter)
-//   const docs = await SupportDoc.find().limit(200);
+export const askSupportAI = async (question: string) => {
+  // 1. Embed question using standardized RAG utility
+  const queryEmbedding = await RAGService.generateEmbedding(question);
 
-//   // 3. Similarity search (you can reuse your cosine logic)
-//   const relevantDocs = findSimilar(docs, queryEmbedding);
+  // 2. Fetch all support docs (Support set is usually small enough for simple in-memory or basic filter)
+  // In a production app, we would use Atlas Vector Search here too.
+  // For now, let's try a basic retrieval or Atlas if index exists.
+  let context = "";
+  try {
+     const docs = await SupportDoc.aggregate([
+       {
+         $vectorSearch: {
+           index: "support_vector_index",
+           path: "embedding",
+           queryVector: queryEmbedding,
+           numCandidates: 10,
+           limit: 5
+         }
+       }
+     ]);
+     context = docs.map(d => d.content).join("\n\n");
+  } catch (err) {
+     console.warn("Support vector search failed, falling back to basic retrieval.");
+     const fallbackDocs = await SupportDoc.find().limit(5);
+     context = fallbackDocs.map(d => d.content).join("\n\n");
+  }
 
-//   // 4. Build context
-//   const context = relevantDocs.map(d => d.content).join("\n");
+  // 3. AI prompt
+  const prompt = `
+You are the Saint Joseph Catholic School (SJCS) Digital Assistant. 
+Your goal is to help parents, students, and visitors with general information about the school.
 
-//   // 5. AI prompt
-//   const prompt = `
-// You are an SJCS school assistant.
+Context from SJCS Handbook/Website:
+${context}
 
-// Answer clearly and professionally.
+User Question: ${question}
 
-// Context:
-// ${context}
+Rules:
+- Be polite, professional, and helpful.
+- If the answer isn't in the context, say: "I'm sorry, I don't have that specific information right now. Please contact the school office at office@sjcs.edu for further assistance."
+- Maintain the Catholic identity of the school in your tone.
+`;
 
-// Question:
-// ${question}
-
-// Rules:
-// - Be concise
-// - Be accurate
-// - If unknown, say "Please contact the school office"
-// `;
-
-//   return askAI(prompt);
-// };
+  return RAGService.generateAnswer(prompt);
+};
