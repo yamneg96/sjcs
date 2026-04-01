@@ -1,7 +1,15 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useRouter } from "@tanstack/react-router";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function AdminLayout() {
   const location = useLocation();
+  const { logout } = useAuthStore();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.navigate({ to: "/lis/login" });
+  };
 
   const navLinks = [
     { name: "Dashboard", path: "/admin", icon: "dashboard" },
@@ -55,9 +63,12 @@ export default function AdminLayout() {
             <span className="material-symbols-outlined">help</span>
             <span className="font-sans text-xs uppercase tracking-widest font-bold">Support</span>
           </button>
-          <button className="flex items-center gap-3 text-slate-500 px-4 py-3 hover:bg-slate-200/50 rounded-lg transition-colors w-full text-left">
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-3 text-slate-500 px-4 py-3 hover:bg-sjcs-error/10 hover:text-sjcs-error rounded-lg transition-colors w-full text-left font-bold"
+          >
             <span className="material-symbols-outlined">logout</span>
-            <span className="font-sans text-xs uppercase tracking-widest font-bold">Logout</span>
+            <span className="font-sans text-xs uppercase tracking-widest">Logout Portal</span>
           </button>
         </div>
       </aside>
@@ -67,7 +78,7 @@ export default function AdminLayout() {
         {/* TopNavBar Shell */}
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 flex justify-between items-center w-full px-8 py-3 shadow-[0_4px_20px_rgba(25,28,29,0.04)]">
           <div className="flex items-center gap-6">
-            <span className="text-lg font-bold bg-gradient-to-br from-sjcs-primary to-sjcs-secondary bg-clip-text text-transparent">
+            <span className="text-lg font-bold bg-linear-to-br from-sjcs-primary to-sjcs-secondary bg-clip-text text-transparent">
               Saint Joseph Admin
             </span>
             <div className="relative hidden sm:block">

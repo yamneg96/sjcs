@@ -21,7 +21,7 @@ export function AIFab() {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-[100] flex flex-col items-end gap-4">
+    <div className="fixed bottom-8 right-8 z-100 flex flex-col items-end gap-4">
       
       {/* CHAT BOX */}
       {isOpen && (
