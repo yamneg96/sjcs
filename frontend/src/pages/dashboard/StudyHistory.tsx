@@ -17,8 +17,8 @@ export default function StudyHistoryPage() {
         {[
           { label: "Total Sessions", value: "47", icon: "history", color: "text-sjcs-primary" },
           { label: "Study Hours", value: "62h", icon: "schedule", color: "text-sjcs-secondary" },
-          { label: "Avg. Score", value: "92%", icon: "trending_up", color: "text-green-600" },
-          { label: "Current Streak", value: "5 Days", icon: "local_fire_department", color: "text-amber-500" },
+          { label: "Avg. Score", value: "92%", icon: "trending_up", color: "text-sjcs-secondary" },
+          { label: "Current Streak", value: "5 Days", icon: "local_fire_department", color: "text-sjcs-tertiary" },
         ].map((stat) => (
           <div key={stat.label} className="bg-sjcs-surface-container-lowest rounded-xl p-8 shadow-ambient text-center">
             <span className={`material-symbols-outlined text-3xl ${stat.color} mb-3`}>{stat.icon}</span>
@@ -43,7 +43,7 @@ export default function StudyHistoryPage() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="font-headline font-bold text-green-600">{log.grade}</p>
+                <p className="font-headline font-bold text-sjcs-secondary">{log.grade}</p>
                 <p className="text-[10px] text-sjcs-on-surface-variant/60 uppercase">{log.date}</p>
               </div>
             </div>

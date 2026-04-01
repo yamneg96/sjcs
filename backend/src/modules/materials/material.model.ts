@@ -7,6 +7,7 @@ export interface IMaterial extends Document {
   type: "ebook" | "worksheet" | "exam";
   fileUrl: string;
   description?: string;
+  fileHash?: string;
   createdAt: Date;
 }
 
@@ -22,6 +23,7 @@ const materialSchema = new Schema<IMaterial>(
     },
     fileUrl: { type: String, required: true },
     description: { type: String },
+    fileHash: { type: String },
   },
   { timestamps: true }
 );

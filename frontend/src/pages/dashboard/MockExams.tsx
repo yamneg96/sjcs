@@ -28,7 +28,7 @@ export default function MockExamsPage() {
               <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">schedule</span> {exam.duration}</span>
               <span className="flex items-center gap-1"><span className="material-symbols-outlined text-sm">quiz</span> {exam.questions} Qs</span>
             </div>
-            <button className="w-full bg-sjcs-on-surface text-sjcs-surface py-3 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase hover:bg-sjcs-secondary transition-colors">
+            <button className="w-full bg-sjcs-on-surface text-background py-3 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase hover:bg-sjcs-secondary transition-colors">
               Start Exam
             </button>
           </div>

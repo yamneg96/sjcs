@@ -9,13 +9,19 @@
     "seed": "ts-node-dev --transpile-only src/modules/students/seed.ts"
   },
   "dependencies": {
+    "@google/genai": "^1.48.0",
     "bcrypt": "^5.1.1",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "groq-sdk": "^1.1.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "pdf-parse": "^1.1.1",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "openai": "^6.33.0",
+    "pdf-parse": "^1.1.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
@@ -23,7 +29,9 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.7",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.10.5",
+    "@types/pdf-parse": "^1.1.5",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.7.3"
   }

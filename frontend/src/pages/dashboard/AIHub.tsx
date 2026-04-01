@@ -3,25 +3,34 @@ import { useAIStore } from "@/store/ai.store";
 
 export default function AIHubPage() {
   const [input, setInput] = useState("");
-  const { messages, addMessage, suggestedPrompts, isLoading, setLoading } = useAIStore();
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<string>("Mathematics");
+  const { messages, suggestedPrompts, isLoading, askQuestion } = useAIStore();
+
+  const handleListen = (id: string, text: string) => {
+    if (playingId === id) {
+      window.speechSynthesis.cancel();
+      setPlayingId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    // remove markdown characters for better speech
+    const cleanText = text.replace(/[#_*\[\]]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    utterance.onend = () => setPlayingId(null);
+    utterance.onerror = () => setPlayingId(null);
+
+    setPlayingId(id);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    const userMsg = { id: Date.now().toString(), role: "user" as const, content: input, timestamp: new Date().toISOString() };
-    addMessage(userMsg);
-    setInput("");
-    setLoading(true);
-
-    // Mock AI response
-    setTimeout(() => {
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: "Thank you for your question. The SJCS AI Learning Assistant is being configured with the RAG pipeline. Once active, I will provide curriculum-specific responses drawn from your course materials, textbooks, and academic resources. Your question has been logged for your study history.",
-        timestamp: new Date().toISOString(),
-      });
-      setLoading(false);
-    }, 1500);
+    if (!input.trim() || isLoading) return;
+    const question = input.trim();
+    setInput(""); // Clear input immediately
+    await askQuestion(question, selectedSubject);
   };
 
   return (
@@ -52,8 +61,20 @@ export default function AIHubPage() {
             )}
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[70%] p-4 rounded-xl ${msg.role === "user" ? "leadership-gradient text-white" : "bg-sjcs-surface-container"}`}>
-                  <p className="text-sm leading-relaxed">{msg.content}</p>
+                <div className={`max-w-[70%] p-4 rounded-xl relative group ${msg.role === "user" ? "leadership-gradient text-sjcs-on-primary" : "bg-sjcs-surface-container"}`}>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  
+                  {msg.role === "assistant" && (
+                    <button 
+                      onClick={() => handleListen(msg.id, msg.content)}
+                      className="absolute -right-12 bottom-0 w-10 h-10 rounded-full bg-sjcs-surface-container-low text-sjcs-on-surface hover:text-sjcs-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Listen"
+                    >
+                      <span className="material-symbols-outlined text-lg">
+                        {playingId === msg.id ? "stop_circle" : "record_voice_over"}
+                      </span>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -78,7 +99,7 @@ export default function AIHubPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
               />
-              <button onClick={handleSend} className="leadership-gradient text-white px-6 py-3 rounded-lg font-bold text-sm active:scale-95 transition-transform">
+              <button onClick={handleSend} className="leadership-gradient text-sjcs-on-primary px-6 py-3 rounded-lg font-bold text-sm active:scale-95 transition-transform">
                 <span className="material-symbols-outlined">send</span>
               </button>
             </div>
@@ -106,7 +127,11 @@ export default function AIHubPage() {
             <h3 className="font-headline font-bold mb-4">Subjects</h3>
             <div className="space-y-2">
               {["Mathematics", "Philosophy", "History", "Theology", "Science"].map((sub) => (
-                <button key={sub} className="w-full text-left p-2 rounded-lg text-sm text-sjcs-on-surface-variant hover:text-sjcs-primary hover:bg-sjcs-surface-container-low transition-colors">
+                <button 
+                  key={sub} 
+                  onClick={() => setSelectedSubject(sub)}
+                  className={`w-full text-left p-2 rounded-lg text-sm transition-colors ${selectedSubject === sub ? 'bg-sjcs-primary/10 text-sjcs-primary font-bold' : 'text-sjcs-on-surface-variant hover:text-sjcs-primary hover:bg-sjcs-surface-container-low'}`}
+                >
                   {sub}
                 </button>
               ))}

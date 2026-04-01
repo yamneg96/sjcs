@@ -21,7 +21,7 @@ export default function PaymentsPage() {
           </div>
           <div className="bg-sjcs-surface-container-lowest rounded-xl p-8 shadow-ambient text-center">
             <p className="text-[10px] text-sjcs-on-surface-variant uppercase tracking-widest mb-2">Total Paid</p>
-            <p className="font-headline text-3xl font-bold text-green-600">$9,050</p>
+            <p className="font-headline text-3xl font-bold text-sjcs-secondary">$9,050</p>
           </div>
           <div className="bg-sjcs-surface-container-lowest rounded-xl p-8 shadow-ambient text-center">
             <p className="text-[10px] text-sjcs-on-surface-variant uppercase tracking-widest mb-2">Next Due Date</p>
@@ -32,7 +32,7 @@ export default function PaymentsPage() {
         <div className="bg-sjcs-surface-container-lowest rounded-xl shadow-ambient overflow-hidden">
           <div className="p-8 border-b border-sjcs-surface-container flex justify-between items-center">
             <h2 className="font-headline text-xl font-bold">Payment History</h2>
-            <button className="leadership-gradient text-white px-6 py-2 rounded-lg font-label text-[10px] font-bold tracking-widest uppercase">
+            <button className="leadership-gradient text-sjcs-on-primary px-6 py-2 rounded-lg font-label text-[10px] font-bold tracking-widest uppercase">
               Make Payment
             </button>
           </div>
@@ -45,7 +45,7 @@ export default function PaymentsPage() {
                 </div>
                 <div className="flex items-center gap-6">
                   <p className="font-headline font-bold">{p.amount}</p>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${p.status === "Paid" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase ${p.status === "Paid" ? "bg-sjcs-secondary-fixed text-sjcs-on-secondary-fixed" : "bg-sjcs-primary-fixed text-sjcs-on-primary-fixed"}`}>
                     {p.status}
                   </span>
                 </div>

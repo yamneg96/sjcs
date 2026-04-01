@@ -13,11 +13,17 @@ export const setupPasswordSchema = z.object({
     .max(128),
 });
 
-export const loginSchema = z.object({
-  fullName: z.string().min(2, "Full name is required"),
-  grade: z.number().int().min(9).max(12),
-  password: z.string().min(1, "Password is required"),
-});
+export const loginSchema = z.union([
+  z.object({
+    email: z.string().email(),
+    password: z.string().min(1, "Password is required"),
+  }),
+  z.object({
+    fullName: z.string().min(2, "Full name is required"),
+    grade: z.number().int().min(9).max(12),
+    password: z.string().min(1, "Password is required"),
+  }),
+]);
 
 export type VerifyStudentInput = z.infer<typeof verifyStudentSchema>;
 export type SetupPasswordInput = z.infer<typeof setupPasswordSchema>;

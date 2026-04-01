@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "@/lib/api";
 
 interface ChatMessage {
   id: string;
@@ -16,6 +17,7 @@ interface AIState {
   setMessages: (messages: ChatMessage[]) => void;
   setLoading: (loading: boolean) => void;
   clearMessages: () => void;
+  askQuestion: (question: string, subject?: string) => Promise<void>;
 }
 
 const defaultPrompts = [
@@ -36,4 +38,56 @@ export const useAIStore = create<AIState>((set) => ({
   setMessages: (messages) => set({ messages }),
   setLoading: (loading) => set({ isLoading: loading }),
   clearMessages: () => set({ messages: [] }),
+
+  askQuestion: async (question, subject) => {
+    // 1. Instantly add user message to state
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: question,
+      timestamp: new Date().toISOString(),
+    };
+    
+    set((state) => ({
+      messages: [...state.messages, userMsg],
+      isLoading: true,
+    }));
+
+    try {
+      // 2. Make API call to the RAG backend
+      const { data } = await api.post("/ai/ask", { question, subject });
+      const answer = data?.data?.answer || "I'm sorry, I couldn't process that request.";
+
+      // 3. Add AI response to state
+      const aiMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: answer,
+        timestamp: new Date().toISOString(),
+      };
+
+      set((state) => ({
+        messages: [...state.messages, aiMsg],
+        isLoading: false,
+      }));
+    } catch (error: any) {
+      console.error("AI Query Error:", error);
+      
+      const errorMessage = error.response?.data?.message 
+        ? `Error: ${error.response.data.message}`
+        : "I encountered an error while trying to fetch that information. Please try again later.";
+
+      const errorMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: errorMessage,
+        timestamp: new Date().toISOString(),
+      };
+
+      set((state) => ({
+        messages: [...state.messages, errorMsg],
+        isLoading: false,
+      }));
+    }
+  },
 }));

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import Student from "../students/student.model";
+import Admin from "./admin.model";
 import { env } from "../../config/env";
 import {
   verifyStudentSchema,
@@ -83,6 +84,41 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    if ("email" in parsed.data) {
+      // Logic for Admin
+      const { email, password } = parsed.data;
+      const admin = await Admin.findOne({ email });
+
+      if (!admin) {
+        sendError(res, "Invalid credentials", 400);
+        return;
+      }
+
+      const match = await bcrypt.compare(password, admin.passwordHash);
+      if (!match) {
+        sendError(res, "Wrong password", 401);
+        return;
+      }
+
+      const token = jwt.sign(
+        { id: admin._id, grade: 999, role: admin.role }, // Grade 999 placeholder to bypass generic checks
+        env.JWT_SECRET,
+        { expiresIn: env.JWT_EXPIRES_IN } as any
+      );
+
+      sendSuccess(res, {
+        token,
+        student: { // Maintaining student key for consistent frontend shape, could expand later
+          id: admin._id,
+          fullName: "System Admin",
+          grade: 999,
+          role: admin.role,
+        },
+      });
+      return;
+    }
+
+    // Existing Student Logic
     const { fullName, grade, password } = parsed.data;
     const student = await Student.findOne({ fullName, grade });
 
@@ -105,7 +141,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign(
       { id: student._id, grade: student.grade },
       env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN as string }
+        { expiresIn: env.JWT_EXPIRES_IN } as any
     );
 
     sendSuccess(res, {

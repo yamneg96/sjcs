@@ -20,7 +20,7 @@ export default function MaterialsPage() {
 
       <div className="flex gap-3 mb-8 flex-wrap">
         {["All", "E-Books", "Worksheets", "Exams"].map((filter) => (
-          <button key={filter} className={`px-6 py-2 rounded-lg font-label text-xs font-bold uppercase tracking-wider transition-colors ${filter === "All" ? "leadership-gradient text-white" : "bg-sjcs-surface-container-highest text-sjcs-on-surface hover:bg-sjcs-surface-variant"}`}>
+          <button key={filter} className={`px-6 py-2 rounded-lg font-label text-xs font-bold uppercase tracking-wider transition-colors ${filter === "All" ? "leadership-gradient text-sjcs-on-primary" : "bg-sjcs-surface-container-highest text-sjcs-on-surface hover:bg-sjcs-surface-variant"}`}>
             {filter}
           </button>
         ))}

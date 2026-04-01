@@ -19,7 +19,7 @@ export default function ExamProgressPage() {
       <div className="bg-sjcs-surface-container-lowest rounded-xl p-10 shadow-ambient mb-8">
         <div className="flex justify-between items-center mb-6">
           <span className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant">Question 16 of 45</span>
-          <span className="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-bold rounded-full uppercase">Flagged</span>
+          <span className="px-3 py-1 bg-sjcs-primary-fixed text-sjcs-on-primary-fixed text-[10px] font-bold rounded-full uppercase">Flagged</span>
         </div>
         <h2 className="font-headline text-xl font-bold mb-8">
           Find the derivative of f(x) = 3x⁴ - 2x² + 7x - 1. Evaluate at x = 2.
@@ -36,7 +36,7 @@ export default function ExamProgressPage() {
 
       <div className="flex justify-between">
         <button className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-8 py-3 rounded-lg font-label text-xs font-bold tracking-widest uppercase">Previous</button>
-        <button className="leadership-gradient text-white px-8 py-3 rounded-lg font-label text-xs font-bold tracking-widest uppercase shadow-lg">Next Question</button>
+        <button className="leadership-gradient text-sjcs-on-primary px-8 py-3 rounded-lg font-label text-xs font-bold tracking-widest uppercase shadow-lg">Next Question</button>
       </div>
     </main>
   );

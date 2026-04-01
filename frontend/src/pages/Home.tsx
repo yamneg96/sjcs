@@ -30,7 +30,7 @@ export default function HomePage() {
               discovery.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/admissions" className="leadership-gradient text-white px-8 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl hover:shadow-sjcs-primary/20 transition-all">
+              <Link to="/admissions" className="leadership-gradient text-sjcs-on-primary px-8 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl hover:shadow-sjcs-primary/20 transition-all">
                 Apply Now
               </Link>
               <Link to="/academics" className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-8 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase hover:bg-sjcs-surface-variant transition-all">
@@ -159,17 +159,17 @@ export default function HomePage() {
                 <span className="material-symbols-outlined">chevron_right</span>
               </Link>
             </div>
-            <div className="md:col-span-2 bg-sjcs-secondary p-10 rounded-xl text-white flex items-center gap-8">
+            <div className="md:col-span-2 bg-sjcs-secondary p-10 rounded-xl text-sjcs-on-secondary flex items-center gap-8">
               <div className="flex-1">
                 <h3 className="font-headline text-2xl font-bold mb-2">
                   Liberal Arts Core
                 </h3>
-                <p className="text-white/80">
+                <p className="text-sjcs-on-secondary/80">
                   Developing critical thinking through classical literature,
                   philosophy, and history.
                 </p>
               </div>
-              <div className="hidden lg:flex w-32 h-32 rounded-lg bg-white/10 backdrop-blur items-center justify-center">
+              <div className="hidden lg:flex w-32 h-32 rounded-lg bg-sjcs-on-secondary/10 backdrop-blur items-center justify-center">
                 <span className="material-symbols-outlined text-4xl">
                   menu_book
                 </span>
@@ -205,10 +205,10 @@ export default function HomePage() {
               </p>
             </div>
             <div className="flex gap-4">
-              <button className="w-12 h-12 rounded-full border-ghost flex items-center justify-center hover:bg-sjcs-primary hover:text-white transition-all">
+              <button className="w-12 h-12 rounded-full border-ghost flex items-center justify-center hover:bg-sjcs-primary hover:text-sjcs-on-primary transition-all">
                 <span className="material-symbols-outlined">chevron_left</span>
               </button>
-              <button className="w-12 h-12 rounded-full border-ghost flex items-center justify-center hover:bg-sjcs-primary hover:text-white transition-all">
+              <button className="w-12 h-12 rounded-full border-ghost flex items-center justify-center hover:bg-sjcs-primary hover:text-sjcs-on-primary transition-all">
                 <span className="material-symbols-outlined">chevron_right</span>
               </button>
             </div>
@@ -241,13 +241,13 @@ export default function HomePage() {
                     alt={item.title}
                     src={item.img}
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-[#191c1d]/90 to-transparent p-8 flex flex-col justify-end">
+                  <div className="absolute inset-0 bg-linear-to-t from-sjcs-on-surface/90 to-transparent p-8 flex flex-col justify-end">
                     <span
                       className={`${item.color} font-bold text-xs tracking-widest uppercase mb-2`}
                     >
                       {item.label}
                     </span>
-                    <h3 className="text-white text-2xl font-bold">
+                    <h3 className="text-sjcs-on-primary text-2xl font-bold">
                       {item.title}
                     </h3>
                   </div>

@@ -111,12 +111,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh]">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-sjcs-on-surface/40 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl mx-4 bg-white dark:bg-[#2e3132] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-2xl mx-4 bg-card rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Search Input */}
         <div className="flex items-center gap-4 px-6 py-5 border-b border-sjcs-surface-container">
           <span className="material-symbols-outlined text-sjcs-on-surface-variant text-xl">
@@ -163,7 +163,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       onMouseEnter={() => setSelectedIndex(globalIndex)}
                       className={`w-full flex items-center gap-4 px-6 py-3 text-left transition-colors ${
                         globalIndex === selectedIndex
-                          ? "bg-sjcs-surface-container-low dark:bg-white/5"
+                          ? "bg-sjcs-surface-container-low dark:bg-sjcs-on-primary/5"
                           : "hover:bg-sjcs-surface-container-low/50"
                       }`}
                     >

@@ -6,6 +6,11 @@ import authRoutes from "./modules/auth/auth.routes";
 import ragRoutes from "./modules/rag/rag.routes";
 import lisRoutes from "./modules/lis/lis.routes";
 import materialsRoutes from "./modules/materials/materials.routes";
+import quizRoutes from "./modules/quiz/quiz.routes";
+import analyticsRoutes from "./modules/analytics/analytics.routes";
+import recommendationsRoutes from "./modules/recommendations/recommendation.routes";
+// import supportRoutes from "./modules/support-ai/support.routes";
+import { initAdmin } from "./modules/auth/seed-admin";
 
 import { errorHandler } from "./middleware/error.middleware";
 
@@ -86,10 +91,17 @@ app.use("/api/auth", authRoutes);
 app.use("/api/ai", ragRoutes);
 app.use("/api/lis", lisRoutes);
 app.use("/api/materials", materialsRoutes);
+app.use("/api/quiz", quizRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/recommendations", recommendationsRoutes);
+// app.use("/api/support", supportRoutes);
 
 /**
  * ❌ ERROR HANDLER (ALWAYS LAST)
  */
 app.use(errorHandler);
+
+// Start background services
+initAdmin();
 
 export default app;

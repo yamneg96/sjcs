@@ -11,7 +11,7 @@ export default function AboutPage() {
             <span className="mx-2">/</span>
             <span className="text-sjcs-on-surface-variant/60">About Our School</span>
           </nav>
-          <h1 className="text-7xl font-headline font-extrabold tracking-tight text-sjcs-on-surface max-w-4xl leading-[1.1]">
+          <h1 className="text-7xl font-headline font-extrabold tracking-tight text-sjcs-on-surface-fixed max-w-4xl leading-[1.1]">
             A Legacy of <span className="text-sjcs-primary italic">Faith</span> &amp; Academic Leadership.
           </h1>
           <p className="mt-8 text-xl text-sjcs-on-surface-variant max-w-2xl leading-relaxed">
@@ -42,8 +42,8 @@ export default function AboutPage() {
             <img className="w-full h-full object-cover" alt="SJCS campus building" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXpIR6qPumCY4-QiQCHWlP6pMocqEQCc-EyPJFkgnN7ELVK2MT2TW4VsJorpARhrzE5uilCLQCgpkcUQK6Qj3aRyS9P2XqF-5hmtU_OWAKJ661z0Rytgg8tWzmrRjLmuivEH3pUEzmetOG7yMkkT-ejW0M_BBgmtB0pYgRDi6QNf99-FM3bRMqM3CXxCYE0LuMHKf1XIMZT68UlMrNe_8yQqyL0IYdV39n7Lpi7bYN1D_gLyZnjnePS3PC5iI9iRJ8-yXe4sVVZ9qT" />
           </div>
 
-          <div className="md:col-span-4 rounded-xl overflow-hidden bg-sjcs-secondary text-white p-12 flex flex-col justify-center">
-            <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/20 text-white font-label text-xs font-bold tracking-widest uppercase w-fit">
+          <div className="md:col-span-4 rounded-xl overflow-hidden bg-sjcs-secondary text-sjcs-on-secondary p-12 flex flex-col justify-center">
+            <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-sjcs-on-secondary/20 text-sjcs-on-secondary font-label text-xs font-bold tracking-widest uppercase w-fit">
               Our Vision
             </div>
             <h3 className="text-3xl font-headline font-bold mb-4">The Standard of Catholic Education</h3>
@@ -76,7 +76,7 @@ export default function AboutPage() {
             <div className="relative rounded-xl overflow-hidden shadow-2xl">
               <img className="w-full aspect-4/5 object-cover" alt="Dr. Helena Rossi, Head of School" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWowmmQs4_JYrgKO-mv8lh-iEeyOwklW33WxNVDlXNxQVzVxzbc05EEfXvdH4PlH6fSkUw-3i6k9yvgMomS6l_QTdM9Qpd26bOSv8u755zj3n-280hzBJn8q_n6pPLk40VVHlOHm0FnAZMPly3CCiuMISxWMhEG_qC9vK4kFsEeRLTGHmJCIkedd0Nu8EKOLguHvo_V0ObiGKf0owNvctXAte3R46y14R8kDbt7o6StIlYPdu3_Gb6WZG2Dfw6SZ3cLrTx3ibRyUYv" />
             </div>
-            <div className="absolute -bottom-10 -right-10 bg-white p-8 rounded-xl shadow-xl max-w-xs">
+            <div className="absolute -bottom-10 -right-10 bg-card p-8 rounded-xl shadow-xl max-w-xs">
               <p className="font-headline font-extrabold text-sjcs-primary text-xl">Dr. Helena Rossi</p>
               <p className="text-xs uppercase tracking-widest text-sjcs-on-surface-variant font-bold mt-1">Head of School</p>
             </div>

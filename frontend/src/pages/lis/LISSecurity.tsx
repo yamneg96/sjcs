@@ -63,7 +63,7 @@ export default function LISSecurityPage() {
               </div>
               <div className="bg-sjcs-surface-container-low p-6 rounded-xl">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label mb-2">Account Status</p>
-                <p className={`text-lg font-bold font-headline ${verifiedStudent.isActivated ? "text-green-600" : "text-amber-500"}`}>
+                <p className={`text-lg font-bold font-headline ${verifiedStudent.isActivated ? "text-sjcs-secondary" : "text-sjcs-tertiary"}`}>
                   {verifiedStudent.isActivated ? "Activated" : "Not Yet Activated"}
                 </p>
               </div>
@@ -71,7 +71,7 @@ export default function LISSecurityPage() {
 
             <button
               onClick={handleContinue}
-              className="w-full leadership-gradient text-white py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all"
+              className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all"
             >
               {verifiedStudent.isActivated ? "Continue to Login" : "Set Up Password"}
             </button>

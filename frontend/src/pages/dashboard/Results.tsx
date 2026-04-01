@@ -9,7 +9,7 @@ export default function ResultsPage() {
       <div className="max-w-3xl mx-auto">
         <div className="bg-sjcs-surface-container-lowest rounded-xl p-12 shadow-ambient text-center mb-8">
           <div className="w-32 h-32 rounded-full leadership-gradient mx-auto mb-6 flex items-center justify-center">
-            <span className="text-white font-headline text-4xl font-black">94%</span>
+            <span className="text-sjcs-on-primary font-headline text-4xl font-black">94%</span>
           </div>
           <h2 className="font-headline text-2xl font-bold mb-2">Excellent Performance!</h2>
           <p className="text-sjcs-on-surface-variant">AP Calculus Mock Exam — Completed on March 30, 2024</p>
@@ -17,7 +17,7 @@ export default function ResultsPage() {
 
         <div className="grid grid-cols-3 gap-4 mb-8">
           {[
-            { label: "Correct", value: "42/45", color: "text-green-600" },
+            { label: "Correct", value: "42/45", color: "text-sjcs-secondary" },
             { label: "Time Used", value: "62 min", color: "text-sjcs-secondary" },
             { label: "Percentile", value: "Top 5%", color: "text-sjcs-primary" },
           ].map((s) => (

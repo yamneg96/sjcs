@@ -26,7 +26,7 @@ export default function DashboardPage() {
               <span className="material-symbols-outlined text-sjcs-primary mb-4 text-3xl">smart_toy</span>
               <h3 className="font-headline text-2xl font-bold mb-2">Ask AI</h3>
               <p className="text-sjcs-on-surface-variant text-sm mb-6">Stuck on a concept? Get academic leadership support instantly.</p>
-              <Link to="/dashboard/ai-hub" className="block w-full leadership-gradient text-white py-3 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase transition-all hover:shadow-lg active:scale-95 text-center">
+              <Link to="/dashboard/ai-hub" className="block w-full leadership-gradient text-sjcs-on-primary py-3 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase transition-all hover:shadow-lg active:scale-95 text-center">
                 Start Inquiry
               </Link>
             </div>
@@ -35,7 +35,7 @@ export default function DashboardPage() {
             <span className="material-symbols-outlined text-sjcs-secondary mb-4 text-4xl">timer</span>
             <h3 className="font-headline text-xl font-bold mb-4">Focused Session</h3>
             <p className="text-sjcs-on-surface-variant text-sm mb-6">Ready to commit? Start a timed academic sprint.</p>
-            <Link to="/dashboard/study-session" className="bg-sjcs-on-surface text-sjcs-surface py-3 px-8 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase hover:bg-sjcs-secondary transition-colors">
+            <Link to="/dashboard/study-session" className="bg-sjcs-on-surface text-background py-3 px-8 rounded-lg font-label text-[10px] font-bold tracking-[0.15em] uppercase hover:bg-sjcs-secondary transition-colors">
               Start Session
             </Link>
           </div>
@@ -48,8 +48,8 @@ export default function DashboardPage() {
               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgRxp2CB9bW8a0ZiOqKxiogbzTNLVswLe6w1w3gOQFA6o-jkqy6lkwR3VcOe97OeYkC0DrifcLeDa5SjBX70uGq8XJKsUBNdYrEgHxnP1yuJnDTxPkv6P5sr3G8vcsfKjNHmvmItJ2O4H7sR82ehj73Q1Cv5mEEcQErLIHGXX_i7js3Y4Zvg2RORr5vUBnnLYMRr2TtwL9w6lC7csyg1T3M-a8guKUZG01es2C-5-tuxaTEtU5XDBCqpOKLJksBsiadfz_6fJnIgOo" alt="School News" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-linear-to-t from-sjcs-primary/20 to-transparent"></div>
               <div className="absolute bottom-0 left-0 p-8">
-                <span className="px-3 py-1 bg-sjcs-primary text-white rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block">Featured Update</span>
-                <h3 className="text-2xl font-headline font-bold text-white max-w-sm">SJCS Robotics Team Advances to State Finals</h3>
+                <span className="px-3 py-1 bg-sjcs-primary text-sjcs-on-primary rounded-full text-[10px] font-bold uppercase tracking-widest mb-4 inline-block">Featured Update</span>
+                <h3 className="text-2xl font-headline font-bold text-sjcs-on-primary max-w-sm">SJCS Robotics Team Advances to State Finals</h3>
               </div>
             </div>
             <div className="md:w-1/2 p-8 flex flex-col justify-center">
@@ -75,7 +75,7 @@ export default function DashboardPage() {
               <h4 className="font-headline text-lg font-bold mb-6">Recent Activity</h4>
               <div className="space-y-4">
                 <div className="flex gap-4 items-start p-4 bg-sjcs-surface-container rounded-xl">
-                  <span className="material-symbols-outlined text-sjcs-primary p-2 bg-white rounded-lg">history_edu</span>
+                  <span className="material-symbols-outlined text-sjcs-primary p-2 bg-card rounded-lg">history_edu</span>
                   <div>
                     <p className="text-sm font-semibold">Quiz Submitted</p>
                     <p className="text-xs text-sjcs-on-surface-variant">Medieval History - Grade: 94%</p>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex gap-4 items-start p-4 bg-sjcs-surface-container rounded-xl">
-                  <span className="material-symbols-outlined text-sjcs-secondary p-2 bg-white rounded-lg">library_books</span>
+                  <span className="material-symbols-outlined text-sjcs-secondary p-2 bg-card rounded-lg">library_books</span>
                   <div>
                     <p className="text-sm font-semibold">Resource Unlocked</p>
                     <p className="text-xs text-sjcs-on-surface-variant">Theology: The Summa Vol 2</p>

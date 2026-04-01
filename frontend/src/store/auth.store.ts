@@ -6,6 +6,7 @@ interface Student {
   fullName: string;
   grade: number;
   studentId: string;
+  role?: string;
 }
 
 interface AuthState {
@@ -26,6 +27,7 @@ interface AuthState {
   verifyStudent: (fullName: string, grade: number) => Promise<boolean>;
   setupPassword: (studentId: string, password: string) => Promise<boolean>;
   login: (fullName: string, grade: number, password: string) => Promise<boolean>;
+  adminLogin: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
   setVerifiedStudent: (student: AuthState["verifiedStudent"]) => void;
@@ -99,6 +101,33 @@ export const useAuthStore = create<AuthState>((set) => ({
       const error = err as { response?: { data?: { message?: string } } };
       set({
         error: error.response?.data?.message || "Login failed",
+        isLoading: false,
+      });
+      return false;
+    }
+  },
+
+  adminLogin: async (email, password) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
+      });
+      const { token, student } = data.data;
+      localStorage.setItem("sjcs_token", token);
+      localStorage.setItem("sjcs_student", JSON.stringify(student));
+      set({
+        token,
+        student,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+      return true;
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      set({
+        error: error.response?.data?.message || "Admin login failed",
         isLoading: false,
       });
       return false;

@@ -27,7 +27,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-sjcs-on-surface-variant">Toggle between light and dark themes</p>
               </div>
               <button className="w-12 h-6 bg-sjcs-surface-container-highest rounded-full relative">
-                <div className="w-5 h-5 bg-white rounded-full absolute left-0.5 top-0.5 shadow-sm transition-transform"></div>
+                <div className="w-5 h-5 bg-card rounded-full absolute left-0.5 top-0.5 shadow-sm transition-transform"></div>
               </button>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-sjcs-surface-container">
@@ -36,7 +36,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-sjcs-on-surface-variant">Receive updates about your academic progress</p>
               </div>
               <button className="w-12 h-6 bg-sjcs-primary rounded-full relative">
-                <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm transition-transform"></div>
+                <div className="w-5 h-5 bg-card rounded-full absolute right-0.5 top-0.5 shadow-sm transition-transform"></div>
               </button>
             </div>
             <div className="flex justify-between items-center py-3">
@@ -45,7 +45,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-sjcs-on-surface-variant">Get daily reminders for study sessions</p>
               </div>
               <button className="w-12 h-6 bg-sjcs-primary rounded-full relative">
-                <div className="w-5 h-5 bg-white rounded-full absolute right-0.5 top-0.5 shadow-sm transition-transform"></div>
+                <div className="w-5 h-5 bg-card rounded-full absolute right-0.5 top-0.5 shadow-sm transition-transform"></div>
               </button>
             </div>
           </div>

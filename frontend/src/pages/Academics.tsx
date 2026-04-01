@@ -35,12 +35,12 @@ export default function AcademicsPage() {
             ))}
           </div>
 
-          <div className="bg-sjcs-secondary text-white p-16 rounded-xl mb-20">
+          <div className="bg-sjcs-secondary text-sjcs-on-secondary p-16 rounded-xl mb-20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
               <div>
                 <span className="text-label-md opacity-80 mb-4 block">Academic Achievement</span>
                 <h2 className="text-4xl font-headline font-bold mb-6">By the Numbers</h2>
-                <p className="text-white/80 leading-relaxed">Our consistent academic results speak to the dedication of our faculty and the determination of our students.</p>
+                <p className="text-sjcs-on-secondary/80 leading-relaxed">Our consistent academic results speak to the dedication of our faculty and the determination of our students.</p>
               </div>
               <div className="grid grid-cols-2 gap-8">
                 {[
@@ -65,7 +65,7 @@ export default function AcademicsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {[9, 10, 11, 12].map((grade) => (
               <div key={grade} className="bg-sjcs-surface-container-lowest p-8 rounded-xl text-center hover:shadow-lg transition-shadow group">
-                <div className="w-20 h-20 rounded-full leadership-gradient mx-auto mb-6 flex items-center justify-center text-white font-headline text-2xl font-black group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 rounded-full leadership-gradient mx-auto mb-6 flex items-center justify-center text-sjcs-on-primary font-headline text-2xl font-black group-hover:scale-110 transition-transform">
                   {grade}
                 </div>
                 <h3 className="font-headline text-xl font-bold mb-2">Grade {grade}</h3>

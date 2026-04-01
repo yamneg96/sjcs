@@ -1,34 +1,94 @@
-import { createRouter, createRootRoute, createRoute, Outlet } from "@tanstack/react-router";
+import {
+  createRouter,
+  createRootRoute,
+  createRoute,
+  Outlet,
+} from "@tanstack/react-router";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { AIFab } from "@/components/layout/AIFab";
+import ProtectedRoute from "./lib/protectedRoute";
+import AdminLayout from "@/components/layout/AdminLayout";
 
-// Lazy page imports
-import HomePage from "@/pages/Home";
-import AboutPage from "@/pages/About";
-import AcademicsPage from "@/pages/Academics";
-import AdmissionsPage from "@/pages/Admissions";
-import NewsPage from "@/pages/News";
-import ClubsPage from "@/pages/Clubs";
-import ContactPage from "@/pages/Contact";
-import LISEntryPage from "@/pages/lis/LISEntry";
-import LISIdentityPage from "@/pages/lis/LISIdentity";
-import LISSecurityPage from "@/pages/lis/LISSecurity";
-import LISSetupPage from "@/pages/lis/LISSetup";
-import LISLoginPage from "@/pages/lis/LISLogin";
-import DashboardPage from "@/pages/dashboard/Dashboard";
-import AIHubPage from "@/pages/dashboard/AIHub";
-import StudySessionPage from "@/pages/dashboard/StudySession";
-import StudyHistoryPage from "@/pages/dashboard/StudyHistory";
-import MockExamsPage from "@/pages/dashboard/MockExams";
-import ExamProgressPage from "@/pages/dashboard/ExamProgress";
-import ResultsPage from "@/pages/dashboard/Results";
-import MaterialsPage from "@/pages/dashboard/Materials";
-import ProfilePage from "@/pages/dashboard/Profile";
-import SettingsPage from "@/pages/dashboard/Settings";
-import PaymentsPage from "@/pages/dashboard/Payments";
+import React, { lazy, Suspense } from "react";
 
-// Root layout with navbar, footer, AI FAB
+/* =========================
+   Lazy Loaded Pages
+========================= */
+
+// Public pages
+const HomePage = lazy(() => import("@/pages/Home"));
+const AboutPage = lazy(() => import("@/pages/About"));
+const AcademicsPage = lazy(() => import("@/pages/Academics"));
+const AdmissionsPage = lazy(() => import("@/pages/Admissions"));
+const NewsPage = lazy(() => import("@/pages/News"));
+const ClubsPage = lazy(() => import("@/pages/Clubs"));
+const ContactPage = lazy(() => import("@/pages/Contact"));
+
+// LIS pages
+const LISEntryPage = lazy(() => import("@/pages/lis/LISEntry"));
+const LISIdentityPage = lazy(() => import("@/pages/lis/LISIdentity"));
+const LISSecurityPage = lazy(() => import("@/pages/lis/LISSecurity"));
+const LISSetupPage = lazy(() => import("@/pages/lis/LISSetup"));
+const LISLoginPage = lazy(() => import("@/pages/lis/LISLogin"));
+
+// Dashboard pages
+const DashboardPage = lazy(() => import("@/pages/dashboard/Dashboard"));
+const AIHubPage = lazy(() => import("@/pages/dashboard/AIHub"));
+const StudySessionPage = lazy(() => import("@/pages/dashboard/StudySession"));
+const StudyHistoryPage = lazy(() => import("@/pages/dashboard/StudyHistory"));
+const MockExamsPage = lazy(() => import("@/pages/dashboard/MockExams"));
+const ExamProgressPage = lazy(() => import("@/pages/dashboard/ExamProgress"));
+const ResultsPage = lazy(() => import("@/pages/dashboard/Results"));
+const MaterialsPage = lazy(() => import("@/pages/dashboard/Materials"));
+const ProfilePage = lazy(() => import("@/pages/dashboard/Profile"));
+const SettingsPage = lazy(() => import("@/pages/dashboard/Settings"));
+const PaymentsPage = lazy(() => import("@/pages/dashboard/Payments"));
+
+// Admin pages
+const AdminDashboardPage = lazy(() => import("@/pages/admin/Dashboard"));
+const AdminUserManagementPage = lazy(() => import("@/pages/admin/UserManagement"));
+const AdminStudentManagementPage = lazy(() => import("@/pages/admin/StudentManagement"));
+const AdminTeacherManagementPage = lazy(() => import("@/pages/admin/TeacherManagement"));
+const AdminMaterialsManagementPage = lazy(() => import("@/pages/admin/MaterialsManagement"));
+const AdminAIMonitoringPage = lazy(() => import("@/pages/admin/AIMonitoring"));
+const AdminPaymentsFinancePage = lazy(() => import("@/pages/admin/PaymentsFinance"));
+const AdminAcademicManagementPage = lazy(() => import("@/pages/admin/AcademicManagement"));
+const AdminSystemSettingsPage = lazy(() => import("@/pages/admin/SystemSettings"));
+const AdminReportsAnalyticsPage = lazy(() => import("@/pages/admin/ReportsAnalytics"));
+
+/* =========================
+   Reusable Wrappers
+========================= */
+
+const Loader = () => (
+  <div className="flex items-center justify-center min-h-[60vh] text-gray-500">
+    Loading...
+  </div>
+);
+
+const withSuspense = (Component: React.ComponentType) => {
+  return (
+    <Suspense fallback={<Loader />}>
+      <Component />
+    </Suspense>
+  );
+};
+
+const withProtected = (Component: React.ComponentType) => {
+  return (
+    <Suspense fallback={<Loader />}>
+      <ProtectedRoute>
+        <Component />
+      </ProtectedRoute>
+    </Suspense>
+  );
+};
+
+/* =========================
+   Root Layout
+========================= */
+
 const rootRoute = createRootRoute({
   component: () => (
     <>
@@ -40,34 +100,229 @@ const rootRoute = createRootRoute({
   ),
 });
 
-// Public routes
-const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: HomePage });
-const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about", component: AboutPage });
-const academicsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/academics", component: AcademicsPage });
-const admissionsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admissions", component: AdmissionsPage });
-const newsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/news", component: NewsPage });
-const clubsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/clubs", component: ClubsPage });
-const contactRoute = createRoute({ getParentRoute: () => rootRoute, path: "/contact", component: ContactPage });
+/* =========================
+   Public Routes
+========================= */
 
-// LIS Entry routes
-const lisRoute = createRoute({ getParentRoute: () => rootRoute, path: "/lis", component: LISEntryPage });
-const lisIdentityRoute = createRoute({ getParentRoute: () => rootRoute, path: "/lis/identity", component: LISIdentityPage });
-const lisSecurityRoute = createRoute({ getParentRoute: () => rootRoute, path: "/lis/security", component: LISSecurityPage });
-const lisSetupRoute = createRoute({ getParentRoute: () => rootRoute, path: "/lis/setup", component: LISSetupPage });
-const lisLoginRoute = createRoute({ getParentRoute: () => rootRoute, path: "/lis/login", component: LISLoginPage });
+const homeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: () => withSuspense(HomePage),
+});
 
-// Dashboard routes (protected)
-const dashboardRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard", component: DashboardPage });
-const aiHubRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/ai-hub", component: AIHubPage });
-const studySessionRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/study-session", component: StudySessionPage });
-const studyHistoryRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/study-history", component: StudyHistoryPage });
-const mockExamsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/mock-exams", component: MockExamsPage });
-const examProgressRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/exam-progress", component: ExamProgressPage });
-const resultsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/results", component: ResultsPage });
-const materialsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/materials", component: MaterialsPage });
-const profileRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/profile", component: ProfilePage });
-const settingsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/settings", component: SettingsPage });
-const paymentsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/dashboard/payments", component: PaymentsPage });
+const aboutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/about",
+  component: () => withSuspense(AboutPage),
+});
+
+const academicsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/academics",
+  component: () => withSuspense(AcademicsPage),
+});
+
+const admissionsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admissions",
+  component: () => withSuspense(AdmissionsPage),
+});
+
+const newsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/news",
+  component: () => withSuspense(NewsPage),
+});
+
+const clubsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/clubs",
+  component: () => withSuspense(ClubsPage),
+});
+
+const contactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/contact",
+  component: () => withSuspense(ContactPage),
+});
+
+/* =========================
+   LIS Routes (Auth Flow)
+========================= */
+
+const lisRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lis",
+  component: () => withSuspense(LISEntryPage),
+});
+
+const lisIdentityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lis/identity",
+  component: () => withSuspense(LISIdentityPage),
+});
+
+const lisSecurityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lis/security",
+  component: () => withSuspense(LISSecurityPage),
+});
+
+const lisSetupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lis/setup",
+  component: () => withSuspense(LISSetupPage),
+});
+
+const lisLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lis/login",
+  component: () => withSuspense(LISLoginPage),
+});
+
+/* =========================
+   Protected Dashboard Routes
+========================= */
+
+const dashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard",
+  component: () => withProtected(DashboardPage),
+});
+
+const aiHubRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/ai-hub",
+  component: () => withProtected(AIHubPage),
+});
+
+const studySessionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/study-session",
+  component: () => withProtected(StudySessionPage),
+});
+
+const studyHistoryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/study-history",
+  component: () => withProtected(StudyHistoryPage),
+});
+
+const mockExamsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/mock-exams",
+  component: () => withProtected(MockExamsPage),
+});
+
+const examProgressRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/exam-progress",
+  component: () => withProtected(ExamProgressPage),
+});
+
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/results",
+  component: () => withProtected(ResultsPage),
+});
+
+const materialsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/materials",
+  component: () => withProtected(MaterialsPage),
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/profile",
+  component: () => withProtected(ProfilePage),
+});
+
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/settings",
+  component: () => withProtected(SettingsPage),
+});
+
+const paymentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dashboard/payments",
+  component: () => withProtected(PaymentsPage),
+});
+
+/* =========================
+   Admin Panel Routes
+========================= */
+
+const adminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin",
+  component: () => withProtected(AdminLayout),
+});
+
+const adminDashboardRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/",
+  component: () => withSuspense(AdminDashboardPage),
+});
+
+const adminUsersRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/users",
+  component: () => withSuspense(AdminUserManagementPage),
+});
+
+const adminStudentsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/students",
+  component: () => withSuspense(AdminStudentManagementPage),
+});
+
+const adminTeachersRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/teachers",
+  component: () => withSuspense(AdminTeacherManagementPage),
+});
+
+const adminMaterialsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/materials",
+  component: () => withSuspense(AdminMaterialsManagementPage),
+});
+
+const adminAIMonitoringRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/ai-monitoring",
+  component: () => withSuspense(AdminAIMonitoringPage),
+});
+
+const adminPaymentsFinanceRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/payments",
+  component: () => withSuspense(AdminPaymentsFinancePage),
+});
+
+const adminAcademicRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/academic",
+  component: () => withSuspense(AdminAcademicManagementPage),
+});
+
+const adminSystemSettingsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/settings",
+  component: () => withSuspense(AdminSystemSettingsPage),
+});
+
+const adminReportsAnalyticsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/reports",
+  component: () => withSuspense(AdminReportsAnalyticsPage),
+});
+
+/* =========================
+   Route Tree
+========================= */
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
@@ -77,11 +332,13 @@ const routeTree = rootRoute.addChildren([
   newsRoute,
   clubsRoute,
   contactRoute,
+
   lisRoute,
   lisIdentityRoute,
   lisSecurityRoute,
   lisSetupRoute,
   lisLoginRoute,
+
   dashboardRoute,
   aiHubRoute,
   studySessionRoute,
@@ -90,12 +347,29 @@ const routeTree = rootRoute.addChildren([
   examProgressRoute,
   resultsRoute,
   materialsRoute,
-  profileRoute,
   settingsRoute,
   paymentsRoute,
+  adminRoute.addChildren([
+    adminDashboardRoute,
+    adminUsersRoute,
+    adminStudentsRoute,
+    adminTeachersRoute,
+    adminMaterialsRoute,
+    adminAIMonitoringRoute,
+    adminPaymentsFinanceRoute,
+    adminAcademicRoute,
+    adminSystemSettingsRoute,
+    adminReportsAnalyticsRoute,
+  ]),
 ]);
 
-export const router = createRouter({ routeTree });
+/* =========================
+   Router Instance
+========================= */
+
+export const router = createRouter({
+  routeTree,
+});
 
 declare module "@tanstack/react-router" {
   interface Register {

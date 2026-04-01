@@ -48,7 +48,7 @@ export default function ContactPage() {
                 <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Message</label>
                 <textarea className="w-full px-4 py-3 rounded-lg bg-sjcs-surface-container-low border-none focus:ring-2 focus:ring-sjcs-secondary transition-all outline-none h-32 resize-none" placeholder="How can we help you?"></textarea>
               </div>
-              <button type="submit" className="w-full leadership-gradient text-white py-4 rounded-lg font-label text-xs font-bold tracking-[0.2em] uppercase shadow-lg hover:shadow-sjcs-primary/30 transition-all">
+              <button type="submit" className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-label text-xs font-bold tracking-[0.2em] uppercase shadow-lg hover:shadow-sjcs-primary/30 transition-all">
                 Send Message
               </button>
             </form>

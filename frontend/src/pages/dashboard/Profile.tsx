@@ -14,7 +14,7 @@ export default function ProfilePage() {
         <div className="bg-sjcs-surface-container-lowest rounded-xl overflow-hidden shadow-ambient mb-8">
           <div className="h-32 leadership-gradient"></div>
           <div className="px-10 pb-10 -mt-12">
-            <div className="w-24 h-24 rounded-full bg-sjcs-surface-container-highest border-4 border-white flex items-center justify-center mb-4">
+            <div className="w-24 h-24 rounded-full bg-sjcs-surface-container-highest border-4 border-card flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-4xl text-sjcs-on-surface-variant">person</span>
             </div>
             <h2 className="font-headline text-2xl font-bold">{student?.fullName || "Student Name"}</h2>

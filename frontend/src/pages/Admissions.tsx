@@ -45,7 +45,7 @@ export default function AdmissionsPage() {
             <h2 className="font-headline text-3xl font-bold mb-6">Ready to Apply?</h2>
             <p className="text-sjcs-on-surface-variant mb-10 max-w-lg mx-auto">Join a community of scholars, leaders, and people of faith. Applications for the 2025-2026 academic year are now open.</p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link to="/contact" className="leadership-gradient text-white px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">Start Application</Link>
+              <Link to="/contact" className="leadership-gradient text-sjcs-on-primary px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">Start Application</Link>
               <Link to="/contact" className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase">Schedule a Tour</Link>
             </div>
           </div>

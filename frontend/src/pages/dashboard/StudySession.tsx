@@ -44,7 +44,7 @@ export default function StudySessionPage() {
 
           <div className="flex gap-4 justify-center">
             {!isActive ? (
-              <button onClick={() => setIsActive(true)} className="leadership-gradient text-white px-12 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">
+              <button onClick={() => setIsActive(true)} className="leadership-gradient text-sjcs-on-primary px-12 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">
                 {seconds > 0 ? "Resume" : "Start Session"}
               </button>
             ) : (

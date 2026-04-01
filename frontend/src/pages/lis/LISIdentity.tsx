@@ -79,7 +79,7 @@ export default function LISIdentityPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full leadership-gradient text-white py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all disabled:opacity-50"
+                className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all disabled:opacity-50"
               >
                 {isLoading ? "Verifying..." : "Verify Identity"}
               </button>

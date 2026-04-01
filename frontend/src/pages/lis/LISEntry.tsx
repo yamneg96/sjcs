@@ -17,7 +17,7 @@ export default function LISEntryPage() {
               Welcome to the LIS (Learning Intelligence System). A centralized, AI-driven platform designed to empower SJCS students with personalized academic pathways and leadership resources.
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Link to="/lis/identity" className="leadership-gradient text-white px-10 py-4 rounded-xl font-bold uppercase tracking-wider text-sm shadow-xl shadow-sjcs-primary/20 hover:scale-105 active:scale-95 transition-all">
+              <Link to="/lis/identity" className="leadership-gradient text-sjcs-on-primary px-10 py-4 rounded-xl font-bold uppercase tracking-wider text-sm shadow-xl shadow-sjcs-primary/20 hover:scale-105 active:scale-95 transition-all">
                 Start Learning
               </Link>
               <button className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-10 py-4 rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-sjcs-surface-container-high transition-all">
@@ -31,7 +31,7 @@ export default function LISEntryPage() {
             </div>
             <div className="absolute -bottom-8 -left-8 bg-sjcs-surface-container-lowest p-8 rounded-xl shadow-xl max-w-xs hidden md:block">
               <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-full leadership-gradient flex items-center justify-center text-white">
+                <div className="w-12 h-12 rounded-full leadership-gradient flex items-center justify-center text-sjcs-on-primary">
                   <span className="material-symbols-outlined">auto_awesome</span>
                 </div>
                 <div>
@@ -95,14 +95,14 @@ export default function LISEntryPage() {
 
       {/* Login Area */}
       <section className="max-w-4xl mx-auto px-8 mt-32 text-center">
-        <div className="bg-sjcs-surface-container-lowest p-12 rounded-xl shadow-2xl shadow-slate-200/50">
+        <div className="bg-sjcs-surface-container-lowest p-12 rounded-xl shadow-2xl shadow-sjcs-secondary/10">
           <div className="mb-10">
             <h2 className="text-2xl font-bold font-headline mb-2">Authenticated Login</h2>
             <p className="text-sm font-label uppercase tracking-widest text-sjcs-on-surface-variant/60">Secure Academic Portal</p>
           </div>
           <div className="max-w-md mx-auto">
             <p className="text-sjcs-on-surface-variant mb-8">To access the LIS platform, you need to verify your identity first.</p>
-            <Link to="/lis/identity" className="block w-full leadership-gradient text-white py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all text-center">
+            <Link to="/lis/identity" className="block w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all text-center">
               Begin Verification
             </Link>
             <p className="text-center text-[10px] text-sjcs-on-surface-variant/60 font-medium mt-4">

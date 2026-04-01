@@ -1,22 +1,40 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { SearchModal } from "./SearchModal";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "../theme-provider";
+import { Button } from "../ui/button";
+import { useAuthStore } from "@/store/auth.store";
+import LogOut from "./LogOut";
 
-const navLinks = [
+/* =========================
+   Base Nav Links (Static)
+========================= */
+
+const baseNavLinks = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
   { to: "/academics", label: "Academics" },
   { to: "/admissions", label: "Admissions" },
   { to: "/news", label: "News" },
   { to: "/clubs", label: "Clubs" },
-  { to: "/lis", label: "LIS Login" },
 ] as const;
+
+/* =========================
+   Navbar Component
+========================= */
 
 export function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Ctrl+K / Cmd+K keyboard shortcut
+  const { theme, setTheme } = useTheme();
+  const { isAuthenticated } = useAuthStore();
+
+  /* =========================
+     Keyboard Shortcut (⌘K)
+  ========================= */
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
@@ -29,35 +47,57 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Close mobile menu on route change
+  /* =========================
+     Lock Scroll (Mobile Menu)
+  ========================= */
+
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [isMobileMenuOpen]);
 
+  /* =========================
+     Dynamic Auth Links
+  ========================= */
+
+  const authNav = isAuthenticated
+    ? [
+        { to: "/dashboard", label: "Dashboard" },
+      ]
+    : [
+        { to: "/lis/login", label: "Login" },
+      ];
+
+  const navLinks = [...baseNavLinks, ...authNav];
+
+  /* =========================
+     Render
+  ========================= */
+
   return (
     <>
-      <nav className="fixed top-0 w-full z-50 glass dark:glass-dark shadow-ambient">
-        <div className="flex justify-between items-center px-6 md:px-8 py-4 w-full max-w-screen-2xl mx-auto">
+      <nav className="bg-background fixed top-0 w-full z-50 glass dark:glass-dark shadow-ambient">
+        <div className="bg-background flex justify-between items-center px-6 md:px-8 py-4 w-full mx-auto">
+          
           {/* Logo */}
           <Link
             to="/"
             className="flex items-center gap-3 group"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            <img src="/logo.png" alt="SJCS Logo" className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 rounded-full" />
-            <span className="text-xl md:text-2xl font-black tracking-tighter text-sjcs-primary dark:text-[#ff4d5a] font-headline">
+            <img
+              src="/logo.png"
+              alt="SJCS Logo"
+              className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-300 rounded-full"
+            />
+            <span className="text-xl md:text-2xl font-black tracking-tighter text-sjcs-primary dark:text-chart-5 font-headline">
               Saint Joseph Catholic School
             </span>
           </Link>
 
-          {/* Desktop Nav Links */}
+          {/* Desktop Links */}
           <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
@@ -65,101 +105,117 @@ export function Navbar() {
                 to={link.to}
                 activeProps={{
                   className:
-                    "text-sjcs-primary border-b-2 border-sjcs-primary pb-1 font-headline font-bold tracking-tight",
+                    "text-sjcs-primary border-b-2 border-sjcs-primary pb-1 font-headline font-bold",
                 }}
                 inactiveProps={{
                   className:
-                    "text-slate-600 dark:text-slate-400 font-medium font-headline hover:text-[#005faf] transition-colors duration-300",
+                    "text-muted-foreground font-medium hover:text-sjcs-secondary transition",
                 }}
               >
                 {link.label}
               </Link>
             ))}
+
+            {/* Logout (Desktop) */}
+            {isAuthenticated && <LogOut />}
           </div>
 
           {/* Actions */}
           <div className="flex items-center gap-3 md:gap-6">
-            {/* Search button with Ctrl+K hint */}
+            
+            {/* Search */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="flex items-center gap-2 text-sjcs-on-surface-variant hover:text-sjcs-primary transition-smooth"
-              aria-label="Search (Ctrl+K)"
+              className="flex items-center gap-2 hover:text-sjcs-primary transition"
             >
               <span className="material-symbols-outlined">search</span>
-              <kbd className="hidden md:flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-sjcs-surface-container text-[10px] font-bold text-sjcs-on-surface-variant/50 tracking-wider">
+              <kbd className="hidden md:flex px-1.5 py-0.5 text-[10px] bg-sjcs-surface-container rounded">
                 ⌘K
               </kbd>
             </button>
 
-            {/* Contact button — hidden on small screens */}
+            {/* Contact */}
             <Link
               to="/contact"
-              className="hidden sm:block bg-sjcs-primary text-white px-6 py-2.5 rounded-lg font-headline font-bold text-sm tracking-tight scale-95 active:scale-90 transition-transform"
+              className="hidden sm:block bg-sjcs-primary text-sjcs-on-primary px-6 py-2.5 rounded-lg font-bold text-sm"
             >
               Contact
             </Link>
 
-            {/* Mobile hamburger */}
+            {/* Theme Toggle */}
+            <Button
+              variant="outline"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <Sun /> : <Moon />}
+            </Button>
+
+            {/* Mobile Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden flex flex-col items-center justify-center w-10 h-10 rounded-lg hover:bg-sjcs-surface-container-low transition-colors"
-              aria-label="Toggle menu"
+              className="lg:hidden w-10 h-10 flex flex-col justify-center items-center"
             >
               <span
-                className={`block w-5 h-0.5 bg-sjcs-on-surface transition-all duration-300 ${
-                  isMobileMenuOpen
-                    ? "rotate-45 translate-y-[3px]"
-                    : ""
+                className={`w-5 h-0.5 bg-current transition ${
+                  isMobileMenuOpen ? "rotate-45 translate-y-1" : ""
                 }`}
               />
               <span
-                className={`block w-5 h-0.5 bg-sjcs-on-surface mt-1 transition-all duration-300 ${
+                className={`w-5 h-0.5 bg-current my-1 transition ${
                   isMobileMenuOpen ? "opacity-0" : ""
                 }`}
               />
               <span
-                className={`block w-5 h-0.5 bg-sjcs-on-surface mt-1 transition-all duration-300 ${
-                  isMobileMenuOpen
-                    ? "-rotate-45 -translate-y-[5px]"
-                    : ""
+                className={`w-5 h-0.5 bg-current transition ${
+                  isMobileMenuOpen ? "-rotate-45 -translate-y-1" : ""
                 }`}
               />
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-            isMobileMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          className={`bg-background lg:hidden transition-all duration-300 ${
+            isMobileMenuOpen ? "max-h-[500px]" : "max-h-0 overflow-hidden"
           }`}
         >
-          <div className="px-6 pb-6 pt-2 space-y-1 border-t border-sjcs-surface-container/50">
+          <div className="px-6 pb-6 space-y-2 border-t">
+
             {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 rounded-xl text-sjcs-on-surface font-headline font-medium hover:bg-sjcs-surface-container-low transition-colors"
-                activeProps={{
-                  className:
-                    "block px-4 py-3 rounded-xl font-headline font-bold text-sjcs-primary bg-sjcs-primary-fixed/30",
-                }}
+                className="block px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800"
               >
                 {link.label}
               </Link>
             ))}
 
-            {/* Mobile-only contact button */}
-            <div className="pt-4">
-              <Link
-                to="/contact"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block w-full text-center leadership-gradient text-white px-6 py-3 rounded-xl font-headline font-bold text-sm tracking-tight"
-              >
-                Contact Us
-              </Link>
-            </div>
+            {/* Logout (Mobile) */}
+            {isAuthenticated && (
+              <div onClick={() => setIsMobileMenuOpen(false)}>
+                <LogOut />
+              </div>
+            )}
+
+            {/* Contact */}
+            <Link
+              to="/contact"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block text-center bg-sjcs-primary text-sjcs-on-primary px-6 py-3 rounded-xl"
+            >
+              Contact Us
+            </Link>
+
+            {/* Theme */}
+            <Button
+              variant="outline"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <Sun /> : <Moon />}
+            </Button>
           </div>
         </div>
       </nav>

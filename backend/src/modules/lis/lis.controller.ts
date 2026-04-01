@@ -4,6 +4,7 @@ import StudyLog from "../learning/studylog.model";
 import { getAccessibleGrades } from "../../utils/grade-access";
 import { sendSuccess, sendError } from "../../utils/api-response";
 import { askLISSchema } from "./lis.validation";
+import { LISService } from "./lis.service";
 
 export const askLIS = async (
   req: AuthRequest,
@@ -20,20 +21,22 @@ export const askLIS = async (
     const userGrade = req.user?.grade || 9;
     const accessibleGrades = getAccessibleGrades(userGrade);
 
-    // Log the study activity
-    await StudyLog.create({
-      studentId: req.user?.id,
-      question,
-      subject,
-      gradeAccessed: userGrade,
-      answer: "RAG system will answer here",
-    });
+    if (!req.user?.id) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
 
-    // Mock RAG response (will be replaced with actual RAG pipeline)
+    const aiResponse = await LISService.askLIS(
+      req.user.id,
+      question,
+      subject || "general",
+      userGrade,
+      accessibleGrades
+    );
+
     sendSuccess(res, {
-      answer:
-        "Thank you for your question. The RAG system is being configured and will provide curriculum-specific answers soon. Your question has been logged for your study history.",
-      subject,
+      answer: aiResponse,
+      subject: subject || "general",
       accessibleGrades,
     });
   } catch (err) {
