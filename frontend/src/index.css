@@ -192,6 +192,48 @@
     --sidebar-accent-foreground: #e1e3e4;
     --sidebar-border: #5b403d;
     --sidebar-ring: #ffb3ac;
+
+    /* --- SJCS Dark Mode Overrides --- */
+    --color-sjcs-primary: #ffb3ac;
+    --color-sjcs-secondary: #a5c8ff;
+    --color-sjcs-tertiary: #b0c6ff;
+    --color-sjcs-error: #ffb4ab;
+
+    --color-sjcs-surface: #111415;
+    --color-sjcs-surface-dim: #111415;
+    --color-sjcs-surface-bright: #373a3b;
+    --color-sjcs-surface-variant: #524342;
+    --color-sjcs-surface-tint: #ffb3ac;
+    --color-sjcs-surface-container-lowest: #0b0f10;
+    --color-sjcs-surface-container-low: #191c1d;
+    --color-sjcs-surface-container: #1d2021;
+    --color-sjcs-surface-container-high: #282a2b;
+    --color-sjcs-surface-container-highest: #333536;
+    --color-sjcs-background: #111415;
+
+    --color-sjcs-on-surface: #e1e2e3;
+    --color-sjcs-on-surface-variant: #d7c2bf;
+    --color-sjcs-on-background: #e1e2e3;
+    --color-sjcs-on-primary: #690007;
+    --color-sjcs-on-secondary: #00315d;
+    --color-sjcs-on-tertiary: #002d6f;
+    --color-sjcs-on-error: #690005;
+
+    --color-sjcs-primary-container: #930010;
+    --color-sjcs-on-primary-container: #ffdad6;
+    --color-sjcs-secondary-container: #004786;
+    --color-sjcs-on-secondary-container: #d4e3ff;
+    --color-sjcs-tertiary-container: #00429c;
+    --color-sjcs-on-tertiary-container: #d9e2ff;
+    --color-sjcs-error-container: #93000a;
+    --color-sjcs-on-error-container: #ffdad6;
+
+    --color-sjcs-outline: #a08c8a;
+    --color-sjcs-outline-variant: #524342;
+
+    --color-sjcs-inverse-surface: #e1e2e3;
+    --color-sjcs-inverse-on-surface: #2e3132;
+    --color-sjcs-inverse-primary: #af101a;
 }
 
 /* ============================================================

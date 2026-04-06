@@ -70,8 +70,7 @@ export default function GeometryExamModule() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="space-y-8">
         
         {/* PROGRESS HEADER */}
         <div className="flex justify-between items-center bg-white p-6 mt-8 rounded-3xl shadow-sm border border-slate-200">

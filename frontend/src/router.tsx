@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 import { AIFab } from "@/components/layout/AIFab";
 import ProtectedRoute from "./lib/protectedRoute";
 import AdminLayout from "@/components/layout/AdminLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 
 import React, { lazy, Suspense } from "react";
 
@@ -184,70 +185,76 @@ const lisLoginRoute = createRoute({
    Protected Dashboard Routes
 ========================= */
 
-const dashboardRoute = createRoute({
+const dashboardLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/dashboard",
-  component: () => withProtected(DashboardPage),
+  component: () => withProtected(DashboardLayout),
+});
+
+const dashboardIndexRoute = createRoute({
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/",
+  component: () => withSuspense(DashboardPage),
 });
 
 const aiHubRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/ai-hub",
-  component: () => withProtected(AIHubPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/ai-hub",
+  component: () => withSuspense(AIHubPage),
 });
 
 const studySessionRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/study-session",
-  component: () => withProtected(StudySessionPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/study-session",
+  component: () => withSuspense(StudySessionPage),
 });
 
 const studyHistoryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/study-history",
-  component: () => withProtected(StudyHistoryPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/study-history",
+  component: () => withSuspense(StudyHistoryPage),
 });
 
 const mockExamsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/mock-exams",
-  component: () => withProtected(MockExamsPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/mock-exams",
+  component: () => withSuspense(MockExamsPage),
 });
 
 const examProgressRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/exam-progress",
-  component: () => withProtected(ExamProgressPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/exam-progress",
+  component: () => withSuspense(ExamProgressPage),
 });
 
 const resultsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/results",
-  component: () => withProtected(ResultsPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/results",
+  component: () => withSuspense(ResultsPage),
 });
 
 const materialsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/materials",
-  component: () => withProtected(MaterialsPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/materials",
+  component: () => withSuspense(MaterialsPage),
 });
 
 const profileRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/profile",
-  component: () => withProtected(ProfilePage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/profile",
+  component: () => withSuspense(ProfilePage),
 });
 
 const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/settings",
-  component: () => withProtected(SettingsPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/settings",
+  component: () => withSuspense(SettingsPage),
 });
 
 const paymentsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/dashboard/payments",
-  component: () => withProtected(PaymentsPage),
+  getParentRoute: () => dashboardLayoutRoute,
+  path: "/payments",
+  component: () => withSuspense(PaymentsPage),
 });
 
 /* =========================
@@ -339,16 +346,19 @@ const routeTree = rootRoute.addChildren([
   lisSetupRoute,
   lisLoginRoute,
 
-  dashboardRoute,
-  aiHubRoute,
-  studySessionRoute,
-  studyHistoryRoute,
-  mockExamsRoute,
-  examProgressRoute,
-  resultsRoute,
-  materialsRoute,
-  settingsRoute,
-  paymentsRoute,
+  dashboardLayoutRoute.addChildren([
+    dashboardIndexRoute,
+    aiHubRoute,
+    studySessionRoute,
+    studyHistoryRoute,
+    mockExamsRoute,
+    examProgressRoute,
+    resultsRoute,
+    materialsRoute,
+    profileRoute,
+    settingsRoute,
+    paymentsRoute,
+  ]),
   adminRoute.addChildren([
     adminDashboardRoute,
     adminUsersRoute,
