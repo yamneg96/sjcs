@@ -10,7 +10,11 @@ export default function DashboardPage() {
       <header>
         <span className="font-label text-xs uppercase tracking-[0.2em] text-sjcs-secondary font-bold mb-2 block">Student Dashboard</span>
         <h1 className="font-headline text-5xl md:text-6xl font-bold tracking-tight text-primary max-w-3xl">
-          Welcome back, <span className="text-sjcs-primary italic">{name}</span>
+          Welcome back, <span
+            className="leadership-gradient-text"
+          >
+            {name}
+          </span>
         </h1>
         <p className="mt-4 text-sjcs-on-surface-variant text-lg max-w-xl leading-relaxed">
           Your academic journey continues. You have 3 pending assignments and 1 upcoming exam this week.

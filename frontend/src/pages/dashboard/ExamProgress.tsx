@@ -184,9 +184,7 @@ export default function GeometryExamModule() {
             {currentStep === 10 ? 'Submit Exam' : 'Next Question'} <ChevronRight size={20} />
           </button>
         </div>
-
       </div>
-    </div>
   );
 }
 
