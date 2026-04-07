@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import 'katex/dist/katex.min.css';
-import { InlineMath, BlockMath } from 'react-katex';
+import { InlineMath } from 'react-katex';
 import JXG from 'jsxgraph';
 import { ChevronLeft, ChevronRight, CheckCircle2, HelpCircle, RotateCcw, Calculator } from 'lucide-react';
 
 export default function GeometryExamModule() {
-  const boardInstance = useRef(null);
+  const boardInstance = useRef<any>(null);
   const [currentStep, setCurrentStep] = useState(1);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [metrics, setMetrics] = useState({ area: "0.00", isEquilateral: false });
 
   // --- JSXGraph Initialization ---
@@ -24,9 +24,9 @@ export default function GeometryExamModule() {
       boundingbox: [-4, 4, 4, -4],
       axis: true,
       showCopyright: false,
-      grid: { strokeColor: '#f1f5f9', opacity: 0.8 },
+      // grid: { strokeColor: '#f1f5f9', opacity: 0.8 },
       pan: { enabled: false },
-      zoom: { enabled: false }
+      // zoom: { enabled: false }
     });
 
     const center = board.create('point', [0, 0], { visible: false, fixed: true });
@@ -38,7 +38,7 @@ export default function GeometryExamModule() {
     const poly = board.create('polygon', [a, b, c], { fillColor: '#3b82f6', fillOpacity: 0.1 });
 
     board.on('update', () => {
-      const area = poly.getArea();
+      const area = poly.Area();
       const s1 = a.Dist(b);
       const s2 = b.Dist(c);
       const s3 = c.Dist(a);
