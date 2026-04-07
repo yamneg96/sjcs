@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { env } from "./config/env";
+import { connectDB } from "./config/db";
 
+// Routes
 import authRoutes from "./modules/auth/auth.routes";
 import ragRoutes from "./modules/rag/rag.routes";
 import lisRoutes from "./modules/lis/lis.routes";
@@ -17,6 +19,11 @@ import { errorHandler } from "./middleware/error.middleware";
 const app = express();
 
 /**
+ * 🗄️ DATABASE CONNECTION
+ */
+connectDB();
+
+/**
  * 🌐 MIDDLEWARE
  */
 app.use(
@@ -29,7 +36,7 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 
 /**
- * 🏠 ROOT ROUTE (Simple UI)
+ * 🏠 ROOT ROUTE
  */
 app.get("/", (_req, res) => {
   res.send(`
@@ -54,12 +61,6 @@ app.get("/", (_req, res) => {
             text-align: center;
             backdrop-filter: blur(10px);
           }
-          h1 {
-            margin-bottom: 10px;
-          }
-          p {
-            opacity: 0.9;
-          }
         </style>
       </head>
       <body>
@@ -67,7 +68,6 @@ app.get("/", (_req, res) => {
           <h1>🚀 SJCS Backend Running</h1>
           <p>Saint Joseph Catholic School API</p>
           <p>Status: <strong>Healthy</strong></p>
-          <p>Visit <code>/api/health</code></p>
         </div>
       </body>
     </html>
