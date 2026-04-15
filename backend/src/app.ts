@@ -28,7 +28,10 @@ connectDB();
  */
 app.use(
   cors({
-    origin: env.NODE_ENV === "development" ? "*" : undefined,
+    origin: [
+      "http://localhost:5173",
+      "https://stjoseph-beryl.vercel.app"
+    ],
     credentials: true,
   })
 );
