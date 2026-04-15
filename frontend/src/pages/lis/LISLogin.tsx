@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/store/auth.store";
+import {Eye, EyeOff} from 'lucide-react'
 
 export default function LISLoginPage() {
   const [isAdminMode, setIsAdminMode] = useState(false);
@@ -10,6 +11,7 @@ export default function LISLoginPage() {
   const [password, setPassword] = useState("");
   const { login, adminLogin, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,14 +96,23 @@ export default function LISLoginPage() {
                 <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Password</label>
                 <a className="text-[10px] font-bold text-sjcs-secondary uppercase tracking-widest hover:underline" href="#">Forgot Password?</a>
               </div>
+              <div className="relative">
               <input
                 className="w-full px-4 py-3 rounded-lg bg-sjcs-surface-container-low border-none focus:ring-2 focus:ring-sjcs-secondary transition-all outline-none"
                 placeholder="••••••••"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sjcs-on-surface-variant/60 hover:text-sjcs-on-surface transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+              </div>
             </div>
             <button
               type="submit"
