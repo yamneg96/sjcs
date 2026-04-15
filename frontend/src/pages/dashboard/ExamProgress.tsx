@@ -26,11 +26,11 @@ export default function GeometryExamModule() {
       showCopyright: false,
       grid: true,
       defaultAxes: {
-        x: { grid: { strokeColor: '#f1f5f9', opacity: 0.8 } },
-        y: { grid: { strokeColor: '#f1f5f9', opacity: 0.8 } }
+        // x: { grid: { strokeColor: '#f1f5f9', opacity: 0.8 } },
+        // y: { grid: { strokeColor: '#f1f5f9', opacity: 0.8 } }
       },
       pan: { enabled: false },
-      zoom: { enabled: false }
+      // zoom: { enabled: false }
     });
 
     const center = board.create('point', [0, 0], { visible: false, fixed: true });
