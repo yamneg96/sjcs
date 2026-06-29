@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
+import { SiGoogleplay } from 'react-icons/si';
 
 export function Footer() {
   return (
     <footer className="w-full mt-20 pt-16 pb-8 bg-sjcs-surface-container-low dark:bg-background border-t border-border">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 px-8 max-w-7xl mx-auto">
+      {/* Top Section: Main Navigation Links */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-12 px-8 max-w-7xl mx-auto">
         {/* Brand */}
-        <div className="space-y-6">
+        <div className="space-y-6 md:col-span-1">
           <div className="flex items-center gap-3">
             <img src="/logo.png" alt="SJCS Logo" className="w-10 h-10 object-contain rounded-full" />
             <div className="text-xl font-bold text-foreground font-headline">
@@ -126,8 +128,46 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
-      <div className="mt-16 pt-8 px-8 border-t border-border max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+      {/* Dominant Full-Width Mobile App Feature Banner */}
+      <div className="mt-16 pt-10 border-t border-border/60 max-w-7xl mx-auto px-8">
+        <div className="bg-card dark:bg-sjcs-surface-container-low border border-border/80 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+          <div className="text-center md:text-left space-y-2">
+            <span className="inline-block px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-sjcs-primary bg-sjcs-primary/10 rounded-full">
+              Mobile Learning Portal
+            </span>
+            <h3 className="text-xl font-bold text-foreground font-headline">
+              Take Learning on the Go
+            </h3>
+            <p className="text-muted-foreground text-sm max-w-xl">
+              Download the official <strong className="text-foreground font-semibold">SJCSA Tutor</strong> application on your Android device to manage study hours, book review sessions, and track assignments seamlessly.
+            </p>
+          </div>
+          
+          <div className="flex shrink-0">
+            {/* Industry Standard Play Store Badge Capsule */}
+            <a 
+              href="https://play.google.com/store" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="group flex items-center gap-3 bg-black text-white px-5 py-2.5 rounded-xl border border-neutral-800 transition-all duration-300 hover:bg-neutral-900 hover:scale-[1.03] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sjcs-primary"
+              aria-label="Get it on Google Play"
+            >
+              <SiGoogleplay size={28} className="text-white transition-colors group-hover:text-[#3bccff]" />
+              <div className="flex flex-col text-left select-none">
+                <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider leading-none">
+                  GET IT ON
+                </span>
+                <span className="text-base font-bold text-white tracking-wide leading-tight mt-0.5">
+                  Google Play
+                </span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Legal bar */}
+      <div className="mt-12 pt-8 px-8 border-t border-border max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <p className="text-muted-foreground font-body text-sm">
           © {new Date().getFullYear()} Saint Joseph Catholic School. All Rights
           Reserved.
