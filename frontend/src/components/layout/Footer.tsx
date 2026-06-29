@@ -144,17 +144,17 @@ export function Footer() {
           </div>
           
           <div className="flex shrink-0">
-            {/* Industry Standard Play Store Badge Capsule */}
+            {/* Leadership Gradient Play Store Badge Capsule */}
             <a 
               href="https://play.google.com/store" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="group flex items-center gap-3 bg-black text-white px-5 py-2.5 rounded-xl border border-neutral-800 transition-all duration-300 hover:bg-neutral-900 hover:scale-[1.03] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-sjcs-primary"
+              className="leadership-gradient flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sjcs-primary"
               aria-label="Get it on Google Play"
             >
-              <SiGoogleplay size={28} className="text-white transition-colors group-hover:text-[#3bccff]" />
+              <SiGoogleplay size={26} className="text-white" />
               <div className="flex flex-col text-left select-none">
-                <span className="text-[10px] font-medium text-neutral-400 uppercase tracking-wider leading-none">
+                <span className="text-[9px] font-medium text-white/80 uppercase tracking-wider leading-none">
                   GET IT ON
                 </span>
                 <span className="text-base font-bold text-white tracking-wide leading-tight mt-0.5">
