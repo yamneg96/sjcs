@@ -9,6 +9,7 @@
     "seed": "ts-node-dev --transpile-only src/modules/students/seed.ts"
   },
   "dependencies": {
+    "@aws-sdk/lib-storage": "^3.1075.0",
     "@google/genai": "^1.48.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",
