@@ -1,15 +1,26 @@
 import axios from "axios";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
-import Organization from "../organizations/organization.model";
+import Organization, { IOrganization } from "../organizations/organization.model";
 import { IAIRequestOptions, IAIResponse } from "./ai.types";
 import { env } from "../../config/env";
 import { ForbiddenError, BadRequestError } from "../../shared/errors/errors";
+
+const SOCRATIC_INSTRUCTION = 
+  "You are an AI learning assistant on the Lumora Platform. Adhere strictly to the Socratic method: " +
+  "Never provide direct answers to the student. Instead, guide them step-by-step, ask clarifying questions, " +
+  "break down complex concepts, and prompt the student to think critically to discover the answer on their own.";
+
+interface IChatMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
 
 export class AIGateway {
   /**
    * Main entry point to invoke AI completions.
    * Manages tenanted limits, allows model restrictions, and counts usages.
+   * Leverages Bonsai fallback resiliency and implements the Socratic Rule.
    */
   static async generateCompletion(
     prompt: string,
@@ -20,7 +31,7 @@ export class AIGateway {
     const tenantId = options.tenantId;
 
     // 1. Perform Tenant Isolation & Credit Limit Guard
-    let organization: any = null;
+    let organization: IOrganization | null = null;
     if (tenantId && tenantId !== "individual" && tenantId !== "platform") {
       organization = await Organization.findById(tenantId);
       if (!organization) {
@@ -49,13 +60,21 @@ export class AIGateway {
       const current = organization.aiConfig?.currentMonthlyUsage ?? 0.0;
       if (current >= limit) {
         // HTTP 402 - Payment Required
-        const error: any = new Error("Monthly organization AI credit limit exceeded. Upgrade your plan.");
-        error.statusCode = 402;
+        const error = new Error("Monthly organization AI credit limit exceeded. Upgrade your plan.");
+        Object.assign(error, { statusCode: 402 });
         throw error;
       }
     }
 
-    // 2. Route completion requests to proper model provider
+    // 2. Inject Socratic Rule System Instruction on all student-facing queries
+    let systemInstruction = options.systemInstruction || "";
+    if (options.isStudentFacing) {
+      systemInstruction = systemInstruction 
+        ? `${SOCRATIC_INSTRUCTION}\n\nAdditional instructions:\n${systemInstruction}`
+        : SOCRATIC_INSTRUCTION;
+    }
+
+    // 3. Route completion requests to proper model provider
     let text = "";
     let promptTokens = 0;
     let completionTokens = 0;
@@ -67,9 +86,9 @@ export class AIGateway {
         } else {
           const groq = new Groq({ apiKey: env.GROQ_API_KEY });
           modelName = modelName || "llama3-8b-8192";
-          const messages: any[] = [];
-          if (options.systemInstruction) {
-            messages.push({ role: "system", content: options.systemInstruction });
+          const messages: IChatMessage[] = [];
+          if (systemInstruction) {
+            messages.push({ role: "system", content: systemInstruction });
           }
           messages.push({ role: "user", content: prompt });
 
@@ -90,9 +109,9 @@ export class AIGateway {
         } else {
           const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY });
           modelName = modelName || "gpt-4o-mini";
-          const messages: any[] = [];
-          if (options.systemInstruction) {
-            messages.push({ role: "system", content: options.systemInstruction });
+          const messages: IChatMessage[] = [];
+          if (systemInstruction) {
+            messages.push({ role: "system", content: systemInstruction });
           }
           messages.push({ role: "user", content: prompt });
 
@@ -108,30 +127,31 @@ export class AIGateway {
           completionTokens = completion.usage?.completion_tokens || 0;
         }
       } else if (provider === "bonsai") {
-        // Local/CDN model downloader, fallback to mixtral or mock
+        // Local model downloader fallback
         if (env.GROQ_API_KEY) {
           // Route Bonsai internally to Groq Mixtral for high quality
           return this.generateCompletion(prompt, {
             ...options,
             provider: "groq",
             modelName: "mixtral-8x7b-32768",
+            systemInstruction, // Pass resolved instruction
           });
         }
-        text = `[BONSAI Adaptive Tutor]: Mocking local model: processing tutoring instruction: "${prompt.substring(0, 50)}..."`;
+        text = `[BONSAI Adaptive Tutor]: Mocking local model: processing tutoring instruction: "${prompt.substring(0, 50)}..."` +
+               `\n[System Guidelines applied: ${systemInstruction ? "Yes" : "No"}]`;
       } else {
         // Default to Google Gemini API
         modelName = modelName || "gemini-1.5-flash";
         if (!env.GEMINI_API_KEY) {
-          text = `[MOCK GEMINI Tutors]: Processing adaptive lesson in sandbox for prompt: "${prompt.substring(0, 50)}..."`;
+          text = `[MOCK GEMINI Tutors]: Processing adaptive lesson in sandbox for prompt: "${prompt.substring(0, 50)}..."` +
+                 `\n[System Guidelines applied: ${systemInstruction ? "Yes" : "No"}]`;
         } else {
           const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${env.GEMINI_API_KEY}`;
           const contents = [];
-          if (options.systemInstruction) {
-            // In Gemini v1beta, systemInstruction is supplied as a separate option or in systemInstruction object
-            // Let's use simple structured messages
+          if (systemInstruction) {
             contents.push({
               role: "user",
-              parts: [{ text: `System context: ${options.systemInstruction}\nUser prompt: ${prompt}` }]
+              parts: [{ text: `System context: ${systemInstruction}\nUser prompt: ${prompt}` }]
             });
           } else {
             contents.push({
@@ -150,26 +170,36 @@ export class AIGateway {
 
           const candidate = response.data?.candidates?.[0];
           text = candidate?.content?.parts?.[0]?.text || "";
-          // Approximate tokens if API doesn't return metadata directly in standard fields
           promptTokens = response.data?.usageMetadata?.promptTokenCount || Math.ceil(prompt.length / 4);
           completionTokens = response.data?.usageMetadata?.candidatesTokenCount || Math.ceil(text.length / 4);
         }
       }
     } catch (err: any) {
-      console.error(`💥 AI Provider error (${provider}):`, err.message);
+      // Secondary Resiliency Rule: If cloud API fails (timeout/429), fall back to local Bonsai
+      if (provider !== "bonsai") {
+        console.warn(`💥 AI Provider error (${provider}): ${err.message}. Falling back to local Bonsai model...`);
+        return this.generateCompletion(prompt, {
+          ...options,
+          provider: "bonsai",
+          systemInstruction, // Carry over resolved instruction
+        });
+      }
+      console.error("💥 local Bonsai fallback failed:", err.message);
       text = `[Adaptive fallback]: Recovering from provider issue. Processing request context: "${prompt.substring(0, 40)}..."`;
     }
 
-    // 3. Estimate cost and update organization consumption
+    // 4. Estimate cost and update organization consumption
     const totalTokens = promptTokens + completionTokens;
-    // Flat estimate: $0.0005 per token-equivalent query or custom provider cost ratios
     const estimatedCostUSD = totalTokens > 0 
-      ? (promptTokens * 0.0000015) + (completionTokens * 0.000002) // Approx pricing
-      : 0.0002; // Minimum cost unit
+      ? (promptTokens * 0.0000015) + (completionTokens * 0.000002)
+      : 0.0002;
 
-    if (organization) {
+    if (organization && organization.aiConfig) {
       organization.aiConfig.currentMonthlyUsage = 
-        Math.min(organization.aiConfig.monthlyUsageLimit, (organization.aiConfig.currentMonthlyUsage || 0) + estimatedCostUSD);
+        Math.min(
+          organization.aiConfig.monthlyUsageLimit, 
+          (organization.aiConfig.currentMonthlyUsage || 0) + estimatedCostUSD
+        );
       await organization.save();
     }
 

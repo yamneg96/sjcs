@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import User, { IUser } from "../users/user.model";
 import { UserRole } from "../../shared/types/auth.types";
 import { NotFoundError, BadRequestError, ConflictError } from "../../shared/errors/errors";
@@ -18,7 +19,7 @@ export class MemberService {
 
     const student = await User.create({
       tenantId,
-      organizationId: tenantId as any, // In our setup organizationId holds the ObjectId ref
+      organizationId: new mongoose.Types.ObjectId(tenantId) as unknown as mongoose.Schema.Types.ObjectId,
       fullName: data.fullName,
       studentId: data.studentId,
       grade: data.grade,
@@ -56,7 +57,7 @@ export class MemberService {
 
         await User.create({
           tenantId,
-          organizationId: tenantId as any,
+          organizationId: new mongoose.Types.ObjectId(tenantId) as unknown as mongoose.Schema.Types.ObjectId,
           fullName: item.fullName,
           studentId: item.studentId,
           grade: item.grade,
@@ -66,8 +67,9 @@ export class MemberService {
         });
 
         importedCount++;
-      } catch (err: any) {
-        errors.push(`Error importing ${item.fullName || "unknown"}: ${err.message}`);
+      } catch (err: unknown) {
+        const error = err as Error;
+        errors.push(`Error importing ${item.fullName || "unknown"}: ${error.message}`);
       }
     }
 
@@ -88,7 +90,7 @@ export class MemberService {
 
     const teacher = await User.create({
       tenantId,
-      organizationId: tenantId as any,
+      organizationId: new mongoose.Types.ObjectId(tenantId) as unknown as mongoose.Schema.Types.ObjectId,
       fullName: data.fullName,
       email: data.email,
       grades: data.grades,
@@ -171,7 +173,7 @@ export class MemberService {
     limit = 10,
     search = ""
   ): Promise<{ results: IUser[]; total: number }> {
-    const query: any = { tenantId, role };
+    const query: mongoose.FilterQuery<IUser> = { tenantId, role };
 
     if (search) {
       query.fullName = { $regex: search, $options: "i" };
@@ -186,6 +188,6 @@ export class MemberService {
       User.countDocuments(query),
     ]);
 
-    return { results: results as any, total };
+    return { results: results as unknown as IUser[], total };
   }
 }

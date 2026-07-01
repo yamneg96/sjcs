@@ -8,7 +8,9 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1077.0",
     "@aws-sdk/lib-storage": "^3.1075.0",
+    "@aws-sdk/s3-request-presigner": "^3.1077.0",
     "@google/genai": "^1.48.0",
     "bcrypt": "^5.1.1",
     "cloudinary": "^1.41.3",

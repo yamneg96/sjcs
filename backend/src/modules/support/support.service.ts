@@ -1,5 +1,6 @@
-import SupportTicket from "./support.model";
-import Material from "../materials/material.model";
+import mongoose from "mongoose";
+import SupportTicket, { ISupportTicket } from "./support.model";
+import Material, { IMaterial } from "../materials/material.model";
 import { AIGateway } from "../ai/ai.gateway";
 import { NotFoundError } from "../../shared/errors/errors";
 
@@ -12,17 +13,17 @@ export class SupportService {
     userId: string,
     subject: string,
     description: string
-  ) {
+  ): Promise<ISupportTicket> {
     // 1. Isolation-safe contextual search on tenant materials to find any helper docs
     let context = "";
     try {
       const docs = await Material.find({
         tenantId,
         $text: { $search: `${subject} ${description}` },
-      }).limit(3).lean();
+      }).limit(3).lean() as unknown as IMaterial[];
 
       if (docs.length > 0) {
-        context = docs.map((d: any) => `[Source Document: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
+        context = docs.map((d) => `[Source Document: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
       }
     } catch (err) {
       // Fallback silently
@@ -69,18 +70,19 @@ Do not make up information. Keep it professional.`;
   /**
    * Retrieve tickets isolated by role/tenant permissions
    */
-  static async getTickets(tenantId: string, userId: string, isAdmin: boolean) {
-    const filter: any = { tenantId };
+  static async getTickets(tenantId: string, userId: string, isAdmin: boolean): Promise<ISupportTicket[]> {
+    const filter: mongoose.FilterQuery<ISupportTicket> = { tenantId };
     if (!isAdmin) {
       filter.userId = userId;
     }
-    return SupportTicket.find(filter).sort({ createdAt: -1 }).lean();
+    const docs = await SupportTicket.find(filter).sort({ createdAt: -1 }).lean();
+    return docs as unknown as ISupportTicket[];
   }
 
   /**
    * Close support ticket
    */
-  static async closeTicket(tenantId: string, ticketId: string) {
+  static async closeTicket(tenantId: string, ticketId: string): Promise<ISupportTicket> {
     const ticket = await SupportTicket.findOneAndUpdate(
       { _id: ticketId, tenantId },
       { status: "closed" },

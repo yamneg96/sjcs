@@ -1,7 +1,21 @@
-import Quiz from "./quiz.model";
-import Material from "../materials/material.model";
+import mongoose from "mongoose";
+import Quiz, { IQuiz } from "./quiz.model";
+import Material, { IMaterial } from "../materials/material.model";
 import { AIGateway } from "../ai/ai.gateway";
 import { NotFoundError } from "../../shared/errors/errors";
+
+// Use this for the data coming from AI
+export interface IGeneratedQuestion {
+  question: string;
+  options: string[];
+  answer: string;
+}
+
+// Use this for your Mongoose model definition
+export interface IQuizQuestion extends IGeneratedQuestion {
+  _id?: mongoose.Types.ObjectId;
+  userAnswer?: string;
+}
 
 export class QuizService {
   /**
@@ -15,10 +29,10 @@ export class QuizService {
         tenantId,
         grade: { $in: accessibleGrades },
         $text: { $search: topic }
-      }).limit(3).lean();
+      }).limit(3).lean() as unknown as IMaterial[];
 
       if (matches.length > 0) {
-        contextText = matches.map((d: any) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
+        contextText = matches.map((d) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
       }
     } catch (err) {
       console.warn("MongoDB text index not available for Material, falling back to basic query");
@@ -26,10 +40,10 @@ export class QuizService {
         tenantId,
         grade: { $in: accessibleGrades },
         title: { $regex: topic, $options: "i" }
-      }).limit(2).lean();
+      }).limit(2).lean() as unknown as IMaterial[];
       
       if (fallback.length > 0) {
-        contextText = fallback.map((d: any) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
+        contextText = fallback.map((d) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
       }
     }
 
@@ -55,7 +69,7 @@ Return ONLY valid JSON array with objects in this exact format:
       systemInstruction,
     });
 
-    let questions;
+    let questions: IQuizQuestion[];
     try {
       const cleaned = response.text
         .replace(/```json/gi, "")
@@ -85,11 +99,11 @@ Return ONLY valid JSON array with objects in this exact format:
 
     // Return the quiz but omit the answers so the client can't cheat easily
     const clientQuiz = {
-      _id: quiz._id,
+      _id: (quiz._id as mongoose.Types.ObjectId).toString(),
       topic: quiz.topic,
       total: quiz.total,
-      questions: (quiz.questions as any[]).map((q) => ({
-        _id: q._id,
+      questions: quiz.questions.map((q: IQuizQuestion) => ({
+        _id: q._id ? (q._id as mongoose.Types.ObjectId).toString() : undefined,
         question: q.question,
         options: q.options,
       })),
@@ -106,7 +120,7 @@ Return ONLY valid JSON array with objects in this exact format:
     quizId: string,
     studentId: string,
     answers: string[]
-  ) {
+  ): Promise<IQuiz> {
     const quiz = await Quiz.findOne({ _id: quizId, studentId, tenantId });
     if (!quiz) throw new NotFoundError("Quiz not found");
 

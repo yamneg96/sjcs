@@ -1,6 +1,14 @@
+import mongoose from "mongoose";
 import Material, { IMaterial } from "./material.model";
 import Subject from "../subjects/subject.model";
-import { NotFoundError, BadRequestError } from "../../shared/errors/errors";
+import { NotFoundError } from "../../shared/errors/errors";
+
+export interface IUpdateMaterialDTO {
+  title?: string;
+  materialType?: "pdf" | "video" | "markdown" | "link";
+  contentUrl?: string;
+  textParsed?: string;
+}
 
 export class MaterialService {
   /**
@@ -20,9 +28,9 @@ export class MaterialService {
     // 2. Create Material using the subject's grade
     const material = await Material.create({
       tenantId,
-      createdBy: createdBy as any,
+      createdBy: new mongoose.Types.ObjectId(createdBy) as unknown as mongoose.Schema.Types.ObjectId,
       title: data.title,
-      subjectId: data.subjectId as any,
+      subjectId: new mongoose.Types.ObjectId(data.subjectId) as unknown as mongoose.Schema.Types.ObjectId,
       materialType: data.materialType,
       contentUrl: data.contentUrl,
       textParsed: data.textParsed,
@@ -39,10 +47,10 @@ export class MaterialService {
     tenantId: string,
     filters: { subjectId?: string; materialType?: string; allowedGrades?: number[] }
   ): Promise<IMaterial[]> {
-    const query: any = { tenantId };
+    const query: mongoose.FilterQuery<IMaterial> = { tenantId };
 
     if (filters.subjectId) {
-      query.subjectId = filters.subjectId;
+      query.subjectId = new mongoose.Types.ObjectId(filters.subjectId);
     }
     if (filters.materialType) {
       query.materialType = filters.materialType;
@@ -51,7 +59,12 @@ export class MaterialService {
       query.grade = { $in: filters.allowedGrades };
     }
 
-    return Material.find(query).sort({ title: 1 }).populate("subjectId", "name grade").lean() as any;
+    const docs = await Material.find(query)
+      .sort({ title: 1 })
+      .populate("subjectId", "name grade")
+      .lean();
+
+    return docs as unknown as IMaterial[];
   }
 
   /**
@@ -68,7 +81,7 @@ export class MaterialService {
   /**
    * Update material
    */
-  static async updateMaterial(tenantId: string, materialId: string, updateData: any): Promise<IMaterial> {
+  static async updateMaterial(tenantId: string, materialId: string, updateData: IUpdateMaterialDTO): Promise<IMaterial> {
     const material = await Material.findOne({ _id: materialId, tenantId });
     if (!material) {
       throw new NotFoundError("Material not found");

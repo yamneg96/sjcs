@@ -2,25 +2,70 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import User, { IUser } from "../users/user.model";
-import Organization from "../organizations/organization.model";
+import Organization, { IOrganization } from "../organizations/organization.model";
 import { env } from "../../config/env";
 import { UserRole, IJWTPayload } from "../../shared/types/auth.types";
 import { generateSlug } from "../../shared/utils/slug";
 import { BadRequestError, UnauthorizedError, ConflictError, NotFoundError } from "../../shared/errors/errors";
 import { eventBus } from "../../shared/events/event-bus";
-import { studentGradeAccessMap } from "../../shared/utils/grade-access-mapping"; // We will create this helper
+import { studentGradeAccessMap } from "../../shared/utils/grade-access-mapping";
+
+export interface IRegisterIndividualDTO {
+  fullName: string;
+  email: string;
+  password?: string;
+  grade?: number;
+}
+
+export interface IRegisterOrgDTO {
+  orgName: string;
+  orgSlug?: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPassword?: string;
+}
+
+export interface IEmailLoginDTO {
+  email: string;
+  password?: string;
+}
+
+export interface IStudentLoginDTO {
+  orgSlug: string;
+  fullName: string;
+  grade: number;
+  password?: string;
+}
+
+export type ILoginDTO = IEmailLoginDTO | IStudentLoginDTO;
+
+export interface IVerifyStudentFirstTimeDTO {
+  orgSlug: string;
+  fullName: string;
+  grade: number;
+}
+
+export interface ISetupPasswordFirstTimeDTO {
+  userId: string;
+  password?: string;
+}
+
+export interface IResetPasswordDTO {
+  token: string;
+  password?: string;
+}
 
 export class AuthService {
   /**
    * Register a new individual learner
    */
-  static async registerIndividual(data: any): Promise<IUser> {
+  static async registerIndividual(data: IRegisterIndividualDTO): Promise<IUser> {
     const existingUser = await User.findOne({ email: data.email });
     if (existingUser) {
       throw new ConflictError("Email already registered");
     }
 
-    const passwordHash = await bcrypt.hash(data.password, 10);
+    const passwordHash = await bcrypt.hash(data.password || "", 10);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const individual = await User.create({
@@ -48,7 +93,9 @@ export class AuthService {
   /**
    * Register a new organization and its owner
    */
-  static async registerOrganization(data: any): Promise<{ organization: any; owner: IUser }> {
+  static async registerOrganization(
+    data: IRegisterOrgDTO
+  ): Promise<{ organization: IOrganization; owner: IUser }> {
     const existingUser = await User.findOne({ email: data.ownerEmail });
     if (existingUser) {
       throw new ConflictError("Owner email already registered");
@@ -63,7 +110,7 @@ export class AuthService {
       throw new ConflictError("Organization slug/domain is already taken");
     }
 
-    // 1. Create Organization (Seq: will set tenantId to _id pre-validation)
+    // 1. Create Organization
     const organization = new Organization({
       name: data.orgName,
       slug: orgSlug,
@@ -71,7 +118,7 @@ export class AuthService {
     await organization.save();
 
     // 2. Create Owner User
-    const passwordHash = await bcrypt.hash(data.ownerPassword, 10);
+    const passwordHash = await bcrypt.hash(data.ownerPassword || "", 10);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const owner = await User.create({
@@ -119,7 +166,7 @@ export class AuthService {
   /**
    * General Login flow (supports email and student names + org slug)
    */
-  static async login(credentials: any): Promise<{ token: string; user: any }> {
+  static async login(credentials: ILoginDTO): Promise<{ token: string; user: Partial<IUser> & { id: string } }> {
     let user: IUser | null = null;
 
     if ("email" in credentials) {
@@ -133,7 +180,7 @@ export class AuthService {
         throw new BadRequestError("Account not activated. Set up password first.");
       }
 
-      const match = await bcrypt.compare(credentials.password, user.passwordHash);
+      const match = await bcrypt.compare(credentials.password || "", user.passwordHash);
       if (!match) {
         throw new UnauthorizedError("Invalid email or password");
       }
@@ -161,7 +208,7 @@ export class AuthService {
         throw new BadRequestError("Account not activated. Please setup your password first.");
       }
 
-      const match = await bcrypt.compare(password, user.passwordHash);
+      const match = await bcrypt.compare(password || "", user.passwordHash);
       if (!match) {
         throw new UnauthorizedError("Invalid credentials");
       }
@@ -190,14 +237,16 @@ export class AuthService {
       grades: accessibleGrades,
     };
 
-    const token = jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN,
-    } as any);
+    const token = jwt.sign(
+      payload,
+      env.JWT_SECRET,
+      { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
+    );
 
     return {
       token,
       user: {
-        id: user._id,
+        id: user._id.toString(),
         fullName: user.fullName,
         email: user.email,
         role: user.role,
@@ -211,7 +260,9 @@ export class AuthService {
   /**
    * First-time student verification (identify student identity check)
    */
-  static async verifyStudentFirstTime(data: any): Promise<{ userId: string; isActivated: boolean }> {
+  static async verifyStudentFirstTime(
+    data: IVerifyStudentFirstTimeDTO
+  ): Promise<{ userId: string; isActivated: boolean }> {
     const org = await Organization.findOne({ slug: data.orgSlug });
     if (!org) {
       throw new NotFoundError("Organization not found");
@@ -237,7 +288,7 @@ export class AuthService {
   /**
    * First-time student password activation setup
    */
-  static async setupPasswordFirstTime(data: any): Promise<void> {
+  static async setupPasswordFirstTime(data: ISetupPasswordFirstTimeDTO): Promise<void> {
     const user = await User.findById(data.userId);
     if (!user) {
       throw new NotFoundError("Student record not found");
@@ -247,7 +298,7 @@ export class AuthService {
       throw new BadRequestError("Account already activated. Please login.");
     }
 
-    const hash = await bcrypt.hash(data.password, 10);
+    const hash = await bcrypt.hash(data.password || "", 10);
     user.passwordHash = hash;
     user.status = "Active";
     user.isVerified = true;
@@ -282,7 +333,7 @@ export class AuthService {
   /**
    * Reset user password
    */
-  static async resetPassword(data: any): Promise<void> {
+  static async resetPassword(data: IResetPasswordDTO): Promise<void> {
     const user = await User.findOne({
       resetPasswordToken: data.token,
       resetPasswordExpires: { $gt: new Date() },
@@ -292,7 +343,7 @@ export class AuthService {
       throw new BadRequestError("Invalid or expired password reset token");
     }
 
-    const hash = await bcrypt.hash(data.password, 10);
+    const hash = await bcrypt.hash(data.password || "", 10);
     user.passwordHash = hash;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;

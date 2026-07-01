@@ -1,7 +1,14 @@
+import mongoose from "mongoose";
 import Subject, { ISubject } from "./subject.model";
 import Material from "../materials/material.model";
 import { generateSlug } from "../../shared/utils/slug";
 import { ConflictError, NotFoundError, BadRequestError } from "../../shared/errors/errors";
+
+export interface IUpdateSubjectDTO {
+  name?: string;
+  grade?: number;
+  description?: string;
+}
 
 export class SubjectService {
   /**
@@ -22,7 +29,7 @@ export class SubjectService {
 
     const subject = await Subject.create({
       tenantId,
-      createdBy: createdBy as any,
+      createdBy: new mongoose.Types.ObjectId(createdBy) as unknown as mongoose.Schema.Types.ObjectId,
       name: data.name,
       slug,
       grade: data.grade,
@@ -36,7 +43,7 @@ export class SubjectService {
    * List all subjects for a tenant, optionally filtered by student accessible grades
    */
   static async listSubjects(tenantId: string, allowedGrades?: number[]): Promise<ISubject[]> {
-    const filter: any = { tenantId };
+    const filter: mongoose.FilterQuery<ISubject> = { tenantId };
 
     if (allowedGrades && allowedGrades.length > 0) {
       filter.grade = { $in: allowedGrades };
@@ -66,7 +73,7 @@ export class SubjectService {
   static async updateSubject(
     tenantId: string,
     subjectId: string,
-    updateData: any
+    updateData: IUpdateSubjectDTO
   ): Promise<ISubject> {
     const subject = await Subject.findOne({ _id: subjectId, tenantId });
     if (!subject) {

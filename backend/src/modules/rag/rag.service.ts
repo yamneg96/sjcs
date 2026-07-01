@@ -1,5 +1,6 @@
+import mongoose from "mongoose";
 import { GoogleGenAI } from "@google/genai";
-import VectorDocument from "./vector-document.model";
+import VectorDocument, { IVectorDocument } from "./vector-document.model";
 import { chunkText } from "./rag.utils";
 import { env } from "../../config/env";
 import pdfParse from "pdf-parse";
@@ -9,7 +10,16 @@ import Groq from "groq-sdk";
 // Initialize AI Clients
 const ai = new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY || "dummy" });
-const groq = new Groq({ apiKey: env.GROQ_API_KEY || "dummy" });
+const _groq = new Groq({ apiKey: env.GROQ_API_KEY || "dummy" });
+
+// Interface to bypass Groq SDK type limitations safely
+interface IGroqEmbeddingsSDK {
+  embeddings: {
+    create(options: { input: string; model: string }): Promise<{
+      data: Array<{ embedding: number[] }>;
+    }>;
+  };
+}
 
 export class RAGService {
   /**
@@ -24,7 +34,8 @@ export class RAGService {
 
     for (const modelId of embeddingModels) {
       try {
-        const groqResponse: any = await (groq as any).embeddings?.create({
+        const groqSdk = _groq as unknown as IGroqEmbeddingsSDK;
+        const groqResponse = await groqSdk.embeddings?.create({
           input: text,
           model: modelId, 
         });
@@ -32,8 +43,9 @@ export class RAGService {
         if (groqResponse?.data?.[0]?.embedding) {
           return groqResponse.data[0].embedding;
         }
-      } catch (error: any) {
-        console.warn(`Embedding model ${modelId} failed. Trying next...`, error.message);
+      } catch (error: unknown) {
+        const err = error as Error;
+        console.warn(`Embedding model ${modelId} failed. Trying next...`, err.message);
         continue;
       }
     }
@@ -59,7 +71,7 @@ export class RAGService {
     for (const modelId of chatModels) {
       try {
         console.log(`Prompting Groq with model: ${modelId}...`);
-        const groqResponse = await groq.chat.completions.create({
+        const groqResponse = await _groq.chat.completions.create({
           messages: [{ role: "user", content: prompt }],
           model: modelId,
         });
@@ -67,14 +79,15 @@ export class RAGService {
         const content = groqResponse.choices[0]?.message?.content;
         if (content) return content;
 
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as { status?: number; message?: string };
         // Handle decommissioned (400) or rate limits (429) by switching models
-        if (error.status === 400 || error.status === 429) {
+        if (err.status === 400 || err.status === 429) {
           console.warn(`Model ${modelId} failed/decommissioned. Switching...`);
           continue; 
         }
         
-        console.error(`Unexpected error with ${modelId}:`, error);
+        console.error(`Unexpected error with ${modelId}:`, err);
         break; 
       }
     }
@@ -130,7 +143,7 @@ export class RAGService {
   ) {
     const queryEmbedding = await this.generateEmbedding(query);
 
-    const pipeline: any[] = [
+    const pipeline: mongoose.PipelineStage[] = [
       {
         $vectorSearch: {
           index: "vector_index", 
@@ -143,7 +156,7 @@ export class RAGService {
             ...(subject ? { subject } : {})
           }
         }
-      },
+      } as any, // Mongoose PipelineStage doesn't natively type $vectorSearch in older mongoose models, cast to any is safe here
       {
         $project: {
           content: 1,
@@ -163,7 +176,7 @@ export class RAGService {
           grade: { $in: accessibleGrades },
           ...(subject ? { subject } : {})
        }).limit(limit).lean();
-       return fallback;
+       return fallback as unknown as IVectorDocument[];
     }
   }
 }

@@ -21,6 +21,7 @@ import lisRoutes from "./modules/lis/lis.routes";
 import billingRoutes from "./modules/billing/billing.routes";
 import supportRoutes from "./modules/support/support.routes";
 import searchRoutes from "./modules/search/search.routes";
+import admissionRoutes from "./modules/admissions/admission.routes";
 
 const app = express();
 
@@ -158,6 +159,7 @@ app.use("/api/lis", lisRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/search", searchRoutes);
+app.use("/api/admissions", admissionRoutes);
 
 /**
  * ❌ GLOBAL ERROR HANDLER (ALWAYS LAST)

@@ -1,4 +1,4 @@
-import Material from "../materials/material.model";
+import Material, { IMaterial } from "../materials/material.model";
 import StudyLog from "../learning/studylog.model";
 import { AnalyticsService } from "../analytics/analytics.service";
 import { AIGateway } from "../ai/ai.gateway";
@@ -41,10 +41,10 @@ export class LISService {
           { subjectId: { $in: subjectIds } },
           { $text: { $search: question } }
         ]
-      }).limit(3).lean();
+      }).limit(3).lean() as unknown as IMaterial[];
 
       if (matches.length > 0) {
-        contextText = matches.map((doc: any) => `[Material: ${doc.title}]: ${doc.textParsed || ""}`).join("\n\n");
+        contextText = matches.map((doc) => `[Material: ${doc.title}]: ${doc.textParsed || ""}`).join("\n\n");
       }
     } catch (err) {
       console.warn("MongoDB text index not available for Material, falling back to title match queries");
@@ -52,10 +52,10 @@ export class LISService {
         tenantId,
         grade: { $in: accessibleGrades },
         title: { $regex: question, $options: "i" }
-      }).limit(2).lean();
+      }).limit(2).lean() as unknown as IMaterial[];
 
       if (fallback.length > 0) {
-        contextText = fallback.map((doc: any) => `[Material: ${doc.title}]: ${doc.textParsed || ""}`).join("\n\n");
+        contextText = fallback.map((doc) => `[Material: ${doc.title}]: ${doc.textParsed || ""}`).join("\n\n");
       }
     }
 
@@ -95,6 +95,7 @@ Provide your response in JSON format with exactly these keys:
       tenantId,
       provider: "gemini", // default to fast gemini-1.5-flash
       systemInstruction,
+      isStudentFacing: true, // enforce Socratic mode
     });
 
     // Try parsing

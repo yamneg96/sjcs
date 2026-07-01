@@ -1,13 +1,14 @@
+import mongoose from "mongoose";
 import Conversation, { IConversation } from "./chat.model";
 import Subject from "../subjects/subject.model";
-import Material from "../materials/material.model";
+import Material, { IMaterial } from "../materials/material.model";
 import { AIGateway } from "../ai/ai.gateway";
-import { NotFoundError, BadRequestError } from "../../shared/errors/errors";
+import { NotFoundError } from "../../shared/errors/errors";
 
 export class ChatService {
   /**
    * Determine whether a request is simple or complex.
-   * Simple requests -> Llama-3-8b (Groq) for quick token response.
+   * Simple requests -> Llama-3.1-8b-instant (Groq) for quick token response.
    * Complex requests -> Gemini-1.5-flash for deeper processing.
    */
   private static routeQuery(prompt: string): { provider: "groq" | "gemini"; model: string } {
@@ -15,7 +16,7 @@ export class ChatService {
     const isGreeting = /^(hello|hi|hey|greetings|good morning|hola)/i.test(prompt.trim());
     
     if (isGreeting || wordCount <= 12) {
-      return { provider: "groq", model: "llama3-8b-8192" };
+      return { provider: "groq", model: "llama-3.1-8b-instant" };
     }
     
     return { provider: "gemini", model: "gemini-1.5-flash" };
@@ -36,7 +37,7 @@ export class ChatService {
       )
         .sort({ score: { $meta: "textScore" } })
         .limit(3)
-        .lean();
+        .lean() as unknown as IMaterial[];
 
       if (matches.length === 0) return "";
 
@@ -51,7 +52,7 @@ export class ChatService {
         title: { $regex: query, $options: "i" }
       })
         .limit(2)
-        .lean();
+        .lean() as unknown as IMaterial[];
       
       if (fallbackMatches.length === 0) return "";
       const contextItems = fallbackMatches.map((m, idx) => `[Source ${idx + 1} - ${m.title}]: ${m.textParsed || ""}`);
@@ -76,8 +77,8 @@ export class ChatService {
 
     const conversation = await Conversation.create({
       tenantId,
-      userId: userId as any,
-      subjectId: data.subjectId as any,
+      userId: new mongoose.Types.ObjectId(userId) as unknown as mongoose.Schema.Types.ObjectId,
+      subjectId: data.subjectId ? new mongoose.Types.ObjectId(data.subjectId) as unknown as mongoose.Schema.Types.ObjectId : undefined,
       title: data.title || "New Discussion Session",
       grade: data.grade,
       messages: [],
@@ -128,6 +129,7 @@ export class ChatService {
       modelName: routing.model,
       systemInstruction,
       tenantId,
+      isStudentFacing: true, // Socratic Rule enforcement
     });
 
     // 5. Append assistant reply and save session
@@ -155,11 +157,12 @@ export class ChatService {
    * List conversations
    */
   static async listConversations(tenantId: string, userId: string): Promise<IConversation[]> {
-    return Conversation.find({ tenantId, userId, isArchived: false })
+    const docs = await Conversation.find({ tenantId, userId, isArchived: false })
       .select("title subjectId grade createdAt updatedAt")
       .sort({ updatedAt: -1 })
       .populate("subjectId", "name grade")
-      .lean() as any;
+      .lean();
+    return docs as unknown as IConversation[];
   }
 
   /**

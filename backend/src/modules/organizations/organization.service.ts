@@ -1,5 +1,26 @@
 import Organization, { IOrganization } from "./organization.model";
-import { NotFoundError, BadRequestError } from "../../shared/errors/errors";
+import { NotFoundError } from "../../shared/errors/errors";
+
+export interface IUpdateOrgDTO {
+  name?: string;
+  logoUrl?: string;
+  branding?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  };
+}
+
+export interface IAIConfigDTO {
+  allowedModels?: string[];
+  monthlyUsageLimit?: number;
+  currentMonthlyUsage?: number;
+}
+
+export interface ISubscriptionDTO {
+  plan?: "Free" | "Starter" | "Growth" | "Enterprise";
+  status?: "Active" | "Suspended" | "PastDue" | "Trialing";
+  expiresAt?: Date;
+}
 
 export class OrganizationService {
   /**
@@ -17,7 +38,7 @@ export class OrganizationService {
   /**
    * Update organization branding / info
    */
-  static async updateOrganization(id: string, updateData: any): Promise<IOrganization> {
+  static async updateOrganization(id: string, updateData: IUpdateOrgDTO): Promise<IOrganization> {
     const org = await Organization.findById(id);
     if (!org) {
       throw new NotFoundError("Organization not found");
@@ -43,17 +64,16 @@ export class OrganizationService {
   /**
    * Update organization AI config limits (SuperAdmin only)
    */
-  static async updateAIConfig(id: string, aiConfig: any): Promise<IOrganization> {
+  static async updateAIConfig(id: string, aiConfig: IAIConfigDTO): Promise<IOrganization> {
     const org = await Organization.findById(id);
     if (!org) {
       throw new NotFoundError("Organization not found");
     }
 
     org.aiConfig = {
-      ...org.aiConfig,
-      ...aiConfig,
       allowedModels: aiConfig.allowedModels || org.aiConfig?.allowedModels || ["bonsai", "gemma"],
       monthlyUsageLimit: aiConfig.monthlyUsageLimit ?? org.aiConfig?.monthlyUsageLimit ?? 50.00,
+      currentMonthlyUsage: aiConfig.currentMonthlyUsage ?? org.aiConfig?.currentMonthlyUsage ?? 0,
     };
 
     await org.save();
@@ -63,7 +83,7 @@ export class OrganizationService {
   /**
    * Update subscription status (SuperAdmin/Billing webhook only)
    */
-  static async updateSubscription(id: string, subscription: any): Promise<IOrganization> {
+  static async updateSubscription(id: string, subscription: ISubscriptionDTO): Promise<IOrganization> {
     const org = await Organization.findById(id);
     if (!org) {
       throw new NotFoundError("Organization not found");
@@ -72,7 +92,7 @@ export class OrganizationService {
     org.subscription = {
       ...org.subscription,
       ...subscription,
-    };
+    } as IOrganization['subscription'];
 
     if (subscription.status === "Suspended") {
       org.suspendedAt = new Date();
