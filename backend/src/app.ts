@@ -22,8 +22,10 @@ import billingRoutes from "./modules/billing/billing.routes";
 import supportRoutes from "./modules/support/support.routes";
 import searchRoutes from "./modules/search/search.routes";
 import admissionRoutes from "./modules/admissions/admission.routes";
+import storageRoutes from "./modules/storage/storage.routes";
 
 const app = express();
+// ... (omitting lines for spacing alignment, let's keep exact matches)
 
 /**
  * 🗄️ DATABASE CONNECTION
@@ -160,6 +162,7 @@ app.use("/api/billing", billingRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admissions", admissionRoutes);
+app.use("/api/storage", storageRoutes);
 
 /**
  * ❌ GLOBAL ERROR HANDLER (ALWAYS LAST)

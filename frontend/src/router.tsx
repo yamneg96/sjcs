@@ -33,16 +33,12 @@ const LISSecurityPage = lazy(() => import("@/pages/lis/LISSecurity"));
 const LISSetupPage = lazy(() => import("@/pages/lis/LISSetup"));
 const LISLoginPage = lazy(() => import("@/pages/lis/LISLogin"));
 
-// Dashboard pages
+// Org Workspace Dashboard pages
 const DashboardPage = lazy(() => import("@/pages/dashboard/Dashboard"));
-const AIHubPage = lazy(() => import("@/pages/dashboard/AIHub"));
-const StudySessionPage = lazy(() => import("@/pages/dashboard/StudySession"));
-const StudyHistoryPage = lazy(() => import("@/pages/dashboard/StudyHistory"));
-const MockExamsPage = lazy(() => import("@/pages/dashboard/MockExams"));
-const ExamProgressPage = lazy(() => import("@/pages/dashboard/ExamProgress"));
-const ResultsPage = lazy(() => import("@/pages/dashboard/Results"));
+const OrgAdmissionsPage = lazy(() => import("@/pages/dashboard/Admissions"));
+const OrgStudentsPage = lazy(() => import("@/pages/dashboard/Students"));
+const OrgTeachersPage = lazy(() => import("@/pages/dashboard/Teachers"));
 const MaterialsPage = lazy(() => import("@/pages/dashboard/Materials"));
-const ProfilePage = lazy(() => import("@/pages/dashboard/Profile"));
 const SettingsPage = lazy(() => import("@/pages/dashboard/Settings"));
 const PaymentsPage = lazy(() => import("@/pages/dashboard/Payments"));
 
@@ -182,7 +178,7 @@ const lisLoginRoute = createRoute({
 });
 
 /* =========================
-   Protected Dashboard Routes
+   Protected Org Workspace Routes
 ========================= */
 
 const dashboardLayoutRoute = createRoute({
@@ -197,52 +193,28 @@ const dashboardIndexRoute = createRoute({
   component: () => withSuspense(DashboardPage),
 });
 
-const aiHubRoute = createRoute({
+const orgAdmissionsRoute = createRoute({
   getParentRoute: () => dashboardLayoutRoute,
-  path: "/ai-hub",
-  component: () => withSuspense(AIHubPage),
+  path: "/admissions",
+  component: () => withSuspense(OrgAdmissionsPage),
 });
 
-const studySessionRoute = createRoute({
+const orgStudentsRoute = createRoute({
   getParentRoute: () => dashboardLayoutRoute,
-  path: "/study-session",
-  component: () => withSuspense(StudySessionPage),
+  path: "/students",
+  component: () => withSuspense(OrgStudentsPage),
 });
 
-const studyHistoryRoute = createRoute({
+const orgTeachersRoute = createRoute({
   getParentRoute: () => dashboardLayoutRoute,
-  path: "/study-history",
-  component: () => withSuspense(StudyHistoryPage),
-});
-
-const mockExamsRoute = createRoute({
-  getParentRoute: () => dashboardLayoutRoute,
-  path: "/mock-exams",
-  component: () => withSuspense(MockExamsPage),
-});
-
-const examProgressRoute = createRoute({
-  getParentRoute: () => dashboardLayoutRoute,
-  path: "/exam-progress",
-  component: () => withSuspense(ExamProgressPage),
-});
-
-const resultsRoute = createRoute({
-  getParentRoute: () => dashboardLayoutRoute,
-  path: "/results",
-  component: () => withSuspense(ResultsPage),
+  path: "/teachers",
+  component: () => withSuspense(OrgTeachersPage),
 });
 
 const materialsRoute = createRoute({
   getParentRoute: () => dashboardLayoutRoute,
   path: "/materials",
   component: () => withSuspense(MaterialsPage),
-});
-
-const profileRoute = createRoute({
-  getParentRoute: () => dashboardLayoutRoute,
-  path: "/profile",
-  component: () => withSuspense(ProfilePage),
 });
 
 const settingsRoute = createRoute({
@@ -348,14 +320,10 @@ const routeTree = rootRoute.addChildren([
 
   dashboardLayoutRoute.addChildren([
     dashboardIndexRoute,
-    aiHubRoute,
-    studySessionRoute,
-    studyHistoryRoute,
-    mockExamsRoute,
-    examProgressRoute,
-    resultsRoute,
+    orgAdmissionsRoute,
+    orgStudentsRoute,
+    orgTeachersRoute,
     materialsRoute,
-    profileRoute,
     settingsRoute,
     paymentsRoute,
   ]),

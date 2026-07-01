@@ -3,20 +3,15 @@ import { useAuthStore } from "@/store/auth.store";
 
 export default function DashboardLayout() {
   const location = useLocation();
-  const { student } = useAuthStore();
-  const name = student?.fullName?.split(" ")[0] || "Student";
+  const { student, logout } = useAuthStore();
+  const name = student?.fullName?.split(" ")[0] || "Staff";
 
   const navLinks = [
     { name: "Overview", path: "/dashboard", icon: "dashboard" },
-    { name: "AI Hub", path: "/dashboard/ai-hub", icon: "smart_toy" },
-    { name: "Materials", path: "/dashboard/materials", icon: "library_books" },
-    { name: "Mock Exams", path: "/dashboard/mock-exams", icon: "quiz" },
-    { name: "Exam Progress", path: "/dashboard/exam-progress", icon: "trending_up" },
-    { name: "Results", path: "/dashboard/results", icon: "grade" },
-    { name: "Study Session", path: "/dashboard/study-session", icon: "timer" },
-    { name: "Study History", path: "/dashboard/study-history", icon: "history" },
-    { name: "Payments", path: "/dashboard/payments", icon: "payments" },
-    { name: "Profile", path: "/dashboard/profile", icon: "person" },
+    { name: "Admissions", path: "/dashboard/admissions", icon: "how_to_reg" },
+    { name: "Students", path: "/dashboard/students", icon: "school" },
+    { name: "Staff/Teachers", path: "/dashboard/teachers", icon: "co_present" },
+    { name: "Materials", path: "/dashboard/materials", icon: "folder_open" },
     { name: "Settings", path: "/dashboard/settings", icon: "settings" },
   ];
 
@@ -30,7 +25,7 @@ export default function DashboardLayout() {
               {name[0]}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-sjcs-on-surface-variant">Welcome back,</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-sjcs-on-surface-variant">Workspace User,</p>
               <p className="font-headline font-bold text-lg">{name}</p>
             </div>
           </div>
@@ -63,15 +58,22 @@ export default function DashboardLayout() {
           })}
         </nav>
 
-        <div className="mt-8 pt-6 border-t border-sjcs-outline-variant/10 px-4">
-          <div className="bg-sjcs-primary-container/30 rounded-2xl p-4 border border-sjcs-primary/10">
-            <p className="text-[10px] font-bold text-sjcs-primary uppercase tracking-widest mb-1">Current Goal</p>
-            <p className="text-sm font-semibold mb-3 tracking-tight">Geometry Mastery</p>
-            <div className="w-full bg-sjcs-surface-container rounded-full h-1.5 overflow-hidden">
-              <div className="leadership-gradient h-full w-[65%] rounded-full shadow-[0_0_8px_rgba(var(--sjcs-primary-rgb),0.4)]"></div>
-            </div>
-            <p className="text-[10px] text-sjcs-on-surface-variant mt-2 text-right font-medium">65% Progress</p>
+        <div className="mt-auto pt-6 border-t border-sjcs-outline-variant/10 px-4 flex flex-col gap-2">
+          <div className="bg-sjcs-primary-container/30 rounded-2xl p-4 border border-sjcs-primary/10 mb-4">
+            <p className="text-[10px] font-bold text-sjcs-primary uppercase tracking-widest mb-1">Organization status</p>
+            <p className="text-sm font-semibold mb-1 tracking-tight">Multi-Tenant OS</p>
+            <p className="text-xs text-sjcs-on-surface-variant">Saint Joseph Academy</p>
           </div>
+          <button 
+            onClick={() => {
+              logout();
+              window.location.href = "/lis/login";
+            }}
+            className="flex items-center gap-3 px-4 py-2 hover:bg-sjcs-error/10 hover:text-sjcs-error rounded-xl transition-colors w-full text-left text-sjcs-on-surface-variant font-bold text-xs uppercase tracking-widest"
+          >
+            <span className="material-symbols-outlined text-[20px]">logout</span>
+            <span>Logout Portal</span>
+          </button>
         </div>
       </aside>
 
@@ -101,7 +103,7 @@ export default function DashboardLayout() {
                 {link.icon}
               </span>
               <span className="text-[8px] font-black uppercase tracking-tighter">
-                {link.name.split(" ")[0]}
+                {link.name.split("/")[0].split(" ")[0]}
               </span>
             </Link>
           );
