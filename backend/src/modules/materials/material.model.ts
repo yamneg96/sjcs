@@ -1,31 +1,38 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import { IBaseDocument } from "../../shared/types/base.types";
 
-export interface IMaterial extends Document {
+export interface IMaterial extends IBaseDocument {
   title: string;
-  subject: string;
+  subjectId: mongoose.Types.ObjectId;
+  materialType: "pdf" | "video" | "markdown" | "link";
+  contentUrl?: string; // Cloudinary URL, YouTube link, website URL
+  textParsed?: string; // Parsed transcription or text content for AI query lookup RAG
+  createdBy: mongoose.Types.ObjectId;
   grade: number;
-  type: "ebook" | "worksheet" | "exam";
-  fileUrl: string;
-  description?: string;
-  fileHash?: string;
-  createdAt: Date;
 }
 
 const materialSchema = new Schema<IMaterial>(
   {
-    title: { type: String, required: true },
-    subject: { type: String, required: true },
-    grade: { type: Number, required: true },
-    type: {
-      type: String,
-      enum: ["ebook", "worksheet", "exam"],
-      required: true,
+    tenantId: { type: String, required: true },
+    title: { type: String, required: true, trim: true },
+    subjectId: { type: Schema.Types.ObjectId, ref: "Subject", required: true },
+    materialType: { 
+      type: String, 
+      enum: ["pdf", "video", "markdown", "link"], 
+      required: true 
     },
-    fileUrl: { type: String, required: true },
-    description: { type: String },
-    fileHash: { type: String },
+    contentUrl: { type: String },
+    textParsed: { type: String },
+    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    grade: { type: Number, required: true, min: 9, max: 12 },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
+
+// Add index to accelerate RAG text searches
+materialSchema.index({ tenantId: 1, subjectId: 1, grade: 1 });
+materialSchema.index({ textParsed: "text" }); // Text index for keyword lookup
 
 export default mongoose.model<IMaterial>("Material", materialSchema);

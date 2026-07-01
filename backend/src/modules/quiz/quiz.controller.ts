@@ -1,60 +1,54 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/auth.middleware";
 import { QuizService } from "./quiz.service";
+import { sendSuccess } from "../../shared/utils/api-response";
+import { asyncHandler } from "../../shared/utils/async-handler";
 import { getAccessibleGrades } from "../../utils/grade-access";
-import { sendSuccess, sendError } from "../../utils/api-response";
+import { BadRequestError } from "../../shared/errors/errors";
+import { AuthRequest } from "../../shared/types/auth.types";
 
-export const generateQuiz = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const { topic } = req.body;
-    if (!topic) {
-      sendError(res, "Topic is required");
-      return;
-    }
-
-    const userGrade = req.user?.grade || 9;
-    const accessibleGrades = getAccessibleGrades(userGrade);
-    
-    if (!req.user?.id) {
-       sendError(res, "Unauthorized", 401);
-       return;
-    }
-
-    const quiz = await QuizService.generateQuiz(
-      req.user.id,
-      topic,
-      accessibleGrades
-    );
-
-    sendSuccess(res, { quiz }, 201);
-  } catch (err) {
-    sendError(res, (err as Error).message, 500);
+export const generateQuiz = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const tenantId = req.user?.tenantId;
+  const studentId = req.user?.id;
+  if (!tenantId || !studentId) {
+    throw new BadRequestError("Auth context required");
   }
-};
 
-export const submitQuiz = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    const { quizId, answers } = req.body;
-    
-    if (!quizId || !Array.isArray(answers)) {
-      sendError(res, "quizId and answers array are required");
-      return;
-    }
-
-    if (!req.user?.id) {
-       sendError(res, "Unauthorized", 401);
-       return;
-    }
-
-    const result = await QuizService.submitQuiz(quizId, req.user.id, answers);
-    sendSuccess(res, { result });
-  } catch (err) {
-    sendError(res, (err as Error).message, 500);
+  const { topic } = req.body;
+  if (!topic) {
+    throw new BadRequestError("Topic is required");
   }
-};
+
+  const userGrade = req.user?.grades?.[0] || 9;
+  const accessibleGrades = getAccessibleGrades(userGrade);
+
+  const quiz = await QuizService.generateQuiz(
+    tenantId,
+    studentId as string,
+    topic,
+    accessibleGrades
+  );
+
+  sendSuccess(res, quiz, "Quiz generated successfully", 201);
+});
+
+export const submitQuiz = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const tenantId = req.user?.tenantId;
+  const studentId = req.user?.id;
+  if (!tenantId || !studentId) {
+    throw new BadRequestError("Auth context required");
+  }
+
+  const { quizId, answers } = req.body;
+  if (!quizId || !Array.isArray(answers)) {
+    throw new BadRequestError("quizId and answers array are required");
+  }
+
+  const result = await QuizService.submitQuiz(
+    tenantId,
+    quizId as string,
+    studentId as string,
+    answers
+  );
+
+  sendSuccess(res, result, "Quiz graded successfully");
+});

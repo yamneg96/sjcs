@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IQuiz extends Document {
+  tenantId: string; // SaaS Tenant Isolation
   studentId: string;
   topic: string;
   questions: {
@@ -16,6 +17,7 @@ export interface IQuiz extends Document {
 
 const quizSchema = new Schema<IQuiz>(
   {
+    tenantId: { type: String, required: true },
     studentId: { type: String, required: true, index: true },
     topic: { type: String, required: true },
     questions: [
@@ -31,5 +33,8 @@ const quizSchema = new Schema<IQuiz>(
   },
   { timestamps: true }
 );
+
+// Add index to accelerate lookup within tenants
+quizSchema.index({ tenantId: 1, studentId: 1 });
 
 export default mongoose.model<IQuiz>("Quiz", quizSchema);

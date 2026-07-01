@@ -1,8 +1,11 @@
 import Quiz from "../quiz/quiz.model";
 
 export class AnalyticsService {
-  static async getStudentAnalytics(studentId: string) {
-    const quizzes = await Quiz.find({ studentId });
+  /**
+   * Aggregates student quiz historical data within a tenant boundary.
+   */
+  static async getStudentAnalytics(tenantId: string, studentId: string) {
+    const quizzes = await Quiz.find({ tenantId, studentId });
 
     const topicStats: Record<string, { totalScore: number; count: number }> = {};
 
@@ -33,8 +36,11 @@ export class AnalyticsService {
     return analytics;
   }
 
-  static async isWeakInTopic(studentId: string, topic: string): Promise<boolean> {
-    const analytics = await this.getStudentAnalytics(studentId);
+  /**
+   * Determines if a student has performed poorly in a specific topic.
+   */
+  static async isWeakInTopic(tenantId: string, studentId: string, topic: string): Promise<boolean> {
+    const analytics = await this.getStudentAnalytics(tenantId, studentId);
     const topicData = analytics.find(
       (a) => a.topic.toLowerCase() === topic.toLowerCase()
     );

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { AuthRequest } from "../../shared/types/auth.types";
 import { sendSuccess, sendError } from "../../utils/api-response";
 import { RAGService } from "./rag.service";
 import { getAccessibleGrades } from "../../utils/grade-access";
@@ -41,7 +41,7 @@ export const askAI = async (
 ): Promise<void> => {
   try {
     const { question, subject } = req.body;
-    const userGrade = req.user?.grade || 9;
+    const userGrade = req.user?.grades?.[0] || 9;
     const accessibleGrades = getAccessibleGrades(userGrade);
 
     if (!question) {

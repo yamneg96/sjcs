@@ -139,7 +139,7 @@ export function Footer() {
               Take Learning on the Go
             </h3>
             <p className="text-muted-foreground text-sm max-w-xl">
-              Download the official <strong className="text-foreground font-semibold">SJCSA Tutor</strong> application on your Android device to manage study hours, book review sessions, and track assignments seamlessly.
+              Download the official <strong className="text-foreground font-semibold">Lumora Tutor</strong> application on your Android device to manage study hours, book review sessions, and track assignments seamlessly.
             </p>
           </div>
           

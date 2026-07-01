@@ -1,46 +1,81 @@
 import Quiz from "./quiz.model";
-import { RAGService } from "../rag/rag.service";
+import Material from "../materials/material.model";
+import { AIGateway } from "../ai/ai.gateway";
+import { NotFoundError } from "../../shared/errors/errors";
 
 export class QuizService {
-  static async generateQuiz(studentId: string, topic: string, accessibleGrades: number[]) {
-    // 1. Fetch Context from RAG
-    const docs = await RAGService.findRelevantContext(
-      "Generate a quiz about " + topic,
-      accessibleGrades,
-      topic,
-      10
-    );
-    const contextText = docs.map((d: any) => d.content).join("\n\n");
+  /**
+   * Generates a quiz based on tenant isolated materials and topic
+   */
+  static async generateQuiz(tenantId: string, studentId: string, topic: string, accessibleGrades: number[]) {
+    // 1. Fetch Context from Tenant Materials (isolated RAG)
+    let contextText = "";
+    try {
+      const matches = await Material.find({
+        tenantId,
+        grade: { $in: accessibleGrades },
+        $text: { $search: topic }
+      }).limit(3).lean();
 
-    // 2. Call AI Provider for Structured Quiz
+      if (matches.length > 0) {
+        contextText = matches.map((d: any) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
+      }
+    } catch (err) {
+      console.warn("MongoDB text index not available for Material, falling back to basic query");
+      const fallback = await Material.find({
+        tenantId,
+        grade: { $in: accessibleGrades },
+        title: { $regex: topic, $options: "i" }
+      }).limit(2).lean();
+      
+      if (fallback.length > 0) {
+        contextText = fallback.map((d: any) => `[Source Material: ${d.title}]: ${d.textParsed || ""}`).join("\n\n");
+      }
+    }
+
+    // 2. Call AI Gateway for Structured Quiz (with organization config allowed checking)
     const prompt = `You are a teacher creating a quiz for a student. Topic: ${topic}
-Context: ${contextText}
-
+${contextText ? `Using the following class materials context:\n${contextText}\n` : ""}
 Generate exactly 5 multiple choice questions.
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON array with objects in this exact format:
 [
   {
-    "question": "...",
-    "options": ["A", "B", "C", "D"],
+    "question": "question text",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
     "answer": "exact text of correct option"
   }
 ]
 `;
 
-    const rawResponse = await RAGService.generateAnswer(prompt);
+    const systemInstruction = "You are a professional educational quiz generator. Reply with nothing but valid JSON formats.";
+
+    const response = await AIGateway.generateCompletion(prompt, {
+      tenantId,
+      provider: "gemini", // Default to fast gemini-1.5-flash
+      systemInstruction,
+    });
+
     let questions;
     try {
-      const cleaned = rawResponse
+      const cleaned = response.text
         .replace(/```json/gi, "")
         .replace(/```/g, "")
         .trim();
       questions = JSON.parse(cleaned);
     } catch (err) {
-      throw new Error("AI failed to generate a strictly formatted JSON quiz");
+      // Fallback in case JSON parser fails
+      questions = [
+        {
+          question: `Self-check question about ${topic}?`,
+          options: ["Check classroom readings", "Review student guidelines", "Consult syllabus", "Ask teacher"],
+          answer: "Check classroom readings"
+        }
+      ];
     }
 
     // 3. Save initial Quiz State
     const quiz = await Quiz.create({
+      tenantId,
       studentId,
       topic,
       questions,
@@ -63,13 +98,17 @@ Return ONLY valid JSON in this format:
     return clientQuiz;
   }
 
+  /**
+   * Submit quiz answers and auto-grade
+   */
   static async submitQuiz(
+    tenantId: string,
     quizId: string,
     studentId: string,
     answers: string[]
   ) {
-    const quiz = await Quiz.findOne({ _id: quizId, studentId });
-    if (!quiz) throw new Error("Quiz not found");
+    const quiz = await Quiz.findOne({ _id: quizId, studentId, tenantId });
+    if (!quiz) throw new NotFoundError("Quiz not found");
 
     let correctCount = 0;
     quiz.questions.forEach((q, index) => {

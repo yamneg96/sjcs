@@ -1,0 +1,59 @@
+import mongoose, { Schema } from "mongoose";
+import { IBaseDocument } from "../../shared/types/base.types";
+import { UserRole } from "../../shared/types/auth.types";
+
+export interface IUser extends IBaseDocument {
+  fullName: string;
+  email?: string; // Optional (e.g. for students who login via studentId)
+  studentId?: string; // School-specific ID (unique within tenant)
+  passwordHash?: string; // Optional until setup-password completes
+  role: UserRole;
+  organizationId?: mongoose.Types.ObjectId; // References Organization
+  grade?: number; // For Students and Individuals (9-12)
+  grades?: number[]; // For Teachers to restrict accessible classroom grades
+  status: "Active" | "Suspended" | "Pending";
+  isVerified: boolean;
+  verificationToken?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
+}
+
+const userSchema = new Schema<IUser>(
+  {
+    tenantId: { type: String, required: true }, // "platform", "individual", or organizationId
+    fullName: { type: String, required: true, trim: true },
+    email: { 
+      type: String, 
+      lowercase: true, 
+      trim: true,
+      index: { unique: true, sparse: true } // Unique only if provided
+    },
+    studentId: { type: String, trim: true }, // For Org Students
+    passwordHash: { type: String },
+    role: { 
+      type: String, 
+      enum: Object.values(UserRole), 
+      required: true 
+    },
+    organizationId: { type: Schema.Types.ObjectId, ref: "Organization" },
+    grade: { type: Number },
+    grades: { type: [Number], default: [] },
+    status: { 
+      type: String, 
+      enum: ["Active", "Suspended", "Pending"], 
+      default: "Pending" 
+    },
+    isVerified: { type: Boolean, default: false },
+    verificationToken: { type: String },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Compound index to ensure studentId is unique per organization/tenant
+userSchema.index({ tenantId: 1, studentId: 1 }, { unique: true, sparse: true });
+
+export default mongoose.model<IUser>("User", userSchema);

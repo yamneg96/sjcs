@@ -1,14 +1,12 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
+import { AuthRequest, IJWTPayload, UserRole } from "../shared/types/auth.types";
+import { UnauthorizedError, ForbiddenError } from "../shared/errors/errors";
 
-export interface AuthRequest extends Request {
-  user?: {
-    id: string;
-    grade: number;
-  };
-}
-
+/**
+ * Protect routes - Verifies JWT token and populates req.user
+ */
 export const protect = (
   req: AuthRequest,
   res: Response,
@@ -19,17 +17,59 @@ export const protect = (
     const token = authHeader?.split(" ")[1];
 
     if (!token) {
-      res.status(401).json({ message: "No token provided" });
-      return;
+      throw new UnauthorizedError("No token provided");
     }
 
-    const decoded = jwt.verify(token, env.JWT_SECRET) as {
-      id: string;
-      grade: number;
-    };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as IJWTPayload;
     req.user = decoded;
     next();
-  } catch {
-    res.status(401).json({ message: "Invalid or expired token" });
+  } catch (error: any) {
+    if (error.name === "TokenExpiredError") {
+      next(new UnauthorizedError("Token expired"));
+    } else {
+      next(new UnauthorizedError("Invalid token"));
+    }
   }
+};
+
+/**
+ * Authorize roles - Checks if user has permission to access resource
+ */
+export const authorize = (...roles: UserRole[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      return next(new UnauthorizedError());
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return next(new ForbiddenError("You do not have permission to perform this action"));
+    }
+
+    next();
+  };
+};
+
+/**
+ * Tenant Guard - Middleware that enforces tenant isolation.
+ * Automatically checks requests to see if user has access to this tenant.
+ * Stuffs tenantId in request query or body if helpful, or validates access parameters.
+ */
+export const tenantGuard = (req: AuthRequest, res: Response, next: NextFunction): void => {
+  if (!req.user) {
+    return next(new UnauthorizedError());
+  }
+
+  // SuperAdmins bypass tenant check
+  if (req.user.role === UserRole.SUPER_ADMIN) {
+    return next();
+  }
+
+  // Identify tenant to verify (from params, query, or headers)
+  const paramTenantId = req.params.tenantId || req.query.tenantId || req.body.tenantId;
+
+  if (paramTenantId && paramTenantId !== req.user.tenantId) {
+    return next(new ForbiddenError("Tenant mismatch - cross-tenant access denied"));
+  }
+
+  next();
 };

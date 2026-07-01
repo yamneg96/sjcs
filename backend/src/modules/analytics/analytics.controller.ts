@@ -1,22 +1,19 @@
 import { Response } from "express";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { AuthRequest } from "../../shared/types/auth.types";
 import { AnalyticsService } from "./analytics.service";
-import { sendSuccess, sendError } from "../../utils/api-response";
+import { sendSuccess } from "../../shared/utils/api-response";
+import { asyncHandler } from "../../shared/utils/async-handler";
+import { BadRequestError } from "../../shared/errors/errors";
 
-export const getAnalytics = async (
-  req: AuthRequest,
-  res: Response
-): Promise<void> => {
-  try {
-    if (!req.user?.id) {
-      sendError(res, "Unauthorized", 401);
-      return;
-    }
-
-    const analytics = await AnalyticsService.getStudentAnalytics(req.user.id);
-
-    sendSuccess(res, { analytics });
-  } catch (err) {
-    sendError(res, (err as Error).message, 500);
+export const getAnalytics = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const tenantId = req.user?.tenantId;
+  const studentId = req.user?.id;
+  
+  if (!tenantId || !studentId) {
+    throw new BadRequestError("Auth context required");
   }
-};
+
+  const analytics = await AnalyticsService.getStudentAnalytics(tenantId, studentId as string);
+
+  sendSuccess(res, { analytics }, "Analytics retrieved successfully");
+});

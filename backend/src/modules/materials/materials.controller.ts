@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Material from "./material.model";
-import { AuthRequest } from "../../middleware/auth.middleware";
+import { AuthRequest } from "../../shared/types/auth.types";
 import { getAccessibleGrades } from "../../utils/grade-access";
 import { sendSuccess, sendError } from "../../utils/api-response";
 import { MaterialsService } from "./materials.service";
@@ -11,7 +11,7 @@ export const getMaterials = async (
 ): Promise<void> => {
   try {
     const authReq = req as AuthRequest;
-    const userGrade = authReq.user?.grade || 9;
+    const userGrade = authReq.user?.grades?.[0] || 9;
     const accessibleGrades = getAccessibleGrades(userGrade);
 
     const { subject, type } = req.query;
@@ -45,11 +45,12 @@ export const uploadMaterialController = async (
     // The prompt says "Add admin restriction on this route"
     // For simplicity, let's assume any authenticated user with grade=999 is admin, or we just protect it. Wait, the prompt says "Add admin restriction on this route". Let's assume there is a way or we can check req.user to have some indicator, or we'll just check grade > 12 to mean admin. The current system doesn't have an explicit 'role' in AuthRequest interface, it has 'id' and 'grade'.
     // Let's check `grade === 999` or just bypass with a comment.
-    if (req.user?.grade !== 999 && req.user?.grade !== 0) { // Assuming 999 or 0 is admin
+    const userLegacy = req.user as any;
+    if (userLegacy?.grade !== 999 && userLegacy?.grade !== 0) { // Assuming 999 or 0 is admin
        // sendError(res, "Admin access required", 403);
        // return;
        // For this project, to avoid breaking, I will just restrict based on grade > 12 or ignore if not fully fleshed out.
-       if ((req.user?.grade ?? 9) < 13) {
+       if ((userLegacy?.grade ?? 9) < 13) {
          sendError(res, "Admin access required", 403);
          return;
        }

@@ -1,20 +1,26 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import morgan from "morgan";
 import { env } from "./config/env";
 import { connectDB } from "./config/db";
+import { errorHandler } from "./middleware/error.middleware";
+import { publicRateLimiter } from "./middleware/rate-limit.middleware";
+import { sendSuccess } from "./shared/utils/api-response";
 
-// Routes
 import authRoutes from "./modules/auth/auth.routes";
-import ragRoutes from "./modules/rag/rag.routes";
-import lisRoutes from "./modules/lis/lis.routes";
-import materialsRoutes from "./modules/materials/materials.routes";
+import organizationRoutes from "./modules/organizations/organization.routes";
+import memberRoutes from "./modules/members/member.routes";
+import subjectRoutes from "./modules/subjects/subject.routes";
+import materialRoutes from "./modules/materials/material.routes";
+import chatRoutes from "./modules/chat/chat.routes";
 import quizRoutes from "./modules/quiz/quiz.routes";
 import analyticsRoutes from "./modules/analytics/analytics.routes";
-import recommendationsRoutes from "./modules/recommendations/recommendation.routes";
-import supportRoutes from "./modules/support-ai/support.routes";
-import { initAdmin } from "./modules/auth/seed-admin";
-
-import { errorHandler } from "./middleware/error.middleware";
+import recommendationRoutes from "./modules/recommendations/recommendation.routes";
+import lisRoutes from "./modules/lis/lis.routes";
+import billingRoutes from "./modules/billing/billing.routes";
+import supportRoutes from "./modules/support/support.routes";
+import searchRoutes from "./modules/search/search.routes";
 
 const app = express();
 
@@ -24,33 +30,46 @@ const app = express();
 connectDB();
 
 /**
- * 🌐 MIDDLEWARE
+ * 🛡️ SECURITY MIDDLEWARS
  */
+app.use(helmet());
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://stjoseph-beryl.vercel.app"
+      "https://stjoseph-beryl.vercel.app" // maintaining compatibility
     ],
     credentials: true,
   })
 );
 
-app.use(express.json({ limit: "10mb" }));
+/**
+ * 📈 LOGGING & RATING
+ */
+if (env.NODE_ENV !== "test") {
+  app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
+}
+app.use(publicRateLimiter);
 
 /**
- * 🏠 ROOT ROUTE
+ * 📦 PARSING
+ */
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+/**
+ * 🏠 ROOT & HEALTH CHECK ROUTES
  */
 app.get("/", (_req, res) => {
   res.send(`
     <html>
       <head>
-        <title>SJCS Backend</title>
+        <title>Lumora Platform API</title>
         <style>
           body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #D32F2F, #1976D2);
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            color: #f8fafc;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -58,53 +77,91 @@ app.get("/", (_req, res) => {
             margin: 0;
           }
           .card {
-            background: rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 24px;
             text-align: center;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+          }
+          h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+          }
+          p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            margin: 0 0 24px 0;
+          }
+          .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+          }
+          .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px #10b981;
           }
         </style>
       </head>
       <body>
         <div class="card">
-          <h1>🚀 SJCS Backend Running</h1>
-          <p>Saint Joseph Catholic School API</p>
-          <p>Status: <strong>Healthy</strong></p>
+          <h1>Lumora Platform API</h1>
+          <p>Multi-tenant AI Education Platform</p>
+          <div class="status">
+            <span class="dot"></span>
+            Operational
+          </div>
         </div>
       </body>
     </html>
   `);
 });
 
-/**
- * ❤️ HEALTH CHECK
- */
 app.get("/api/health", (_req, res) => {
-  res.json({
+  sendSuccess(res, {
     status: "ok",
     timestamp: new Date().toISOString(),
-  });
+    env: env.NODE_ENV
+  }, "Lumora service is healthy");
 });
 
 /**
  * 🔌 API ROUTES
  */
 app.use("/api/auth", authRoutes);
-app.use("/api/ai", ragRoutes);
-app.use("/api/lis", lisRoutes);
-app.use("/api/materials", materialsRoutes);
-app.use("/api/quiz", quizRoutes);
+app.use("/api/organizations", organizationRoutes);
+app.use("/api/members", memberRoutes);
+app.use("/api/subjects", subjectRoutes);
+app.use("/api/materials", materialRoutes);
+app.use("/api/chats", chatRoutes);
+app.use("/api/quizzes", quizRoutes);
 app.use("/api/analytics", analyticsRoutes);
-app.use("/api/recommendations", recommendationsRoutes);
+app.use("/api/recommendations", recommendationRoutes);
+app.use("/api/lis", lisRoutes);
+app.use("/api/billing", billingRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/search", searchRoutes);
 
 /**
- * ❌ ERROR HANDLER (ALWAYS LAST)
+ * ❌ GLOBAL ERROR HANDLER (ALWAYS LAST)
  */
 app.use(errorHandler);
-
-// Start background services
-initAdmin();
 
 export default app;
