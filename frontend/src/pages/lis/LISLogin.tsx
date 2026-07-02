@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/auth.store";
+// import { useNavigate } from "@tanstack/react-router";
+// import { useAuthStore } from "@/store/auth.store";
 import {Eye, EyeOff} from 'lucide-react'
 
 export default function LISLoginPage() {
@@ -9,20 +9,20 @@ export default function LISLoginPage() {
   const [email, setEmail] = useState("");
   const [grade, setGrade] = useState<number>(9);
   const [password, setPassword] = useState("");
-  const { login, adminLogin, isLoading, error, clearError } = useAuthStore();
-  const navigate = useNavigate();
+  // const { login, adminLogin, isLoading, error, clearError } = useAuthStore();
+  // const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    // clearError();
     
     if (isAdminMode) {
-      const success = await adminLogin(email, password);
-      if (success) navigate({ to: "/admin" });
+      // const success = await adminLogin(email, password);
+      // if (success) navigate({ to: "/admin" });
     } else {
-      const success = await login(fullName, grade, password);
-      if (success) navigate({ to: "/dashboard" });
+      // const success = await login(fullName, grade, password);
+      // if (success) navigate({ to: "/dashboard" });
     }
   };
 
@@ -44,11 +44,11 @@ export default function LISLoginPage() {
             <p className="text-sm font-label uppercase tracking-widest text-sjcs-on-surface-variant/60">Secure Academic Portal</p>
           </div>
 
-          {error && (
+          {/* {error && (
             <div className="mb-6 p-4 rounded-lg bg-sjcs-error-container text-sjcs-on-error-container text-sm">
               {error}
             </div>
-          )}
+          )} */}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isAdminMode ? (
@@ -116,10 +116,11 @@ export default function LISLoginPage() {
             </div>
             <button
               type="submit"
-              disabled={isLoading}
+              // disabled={isLoading}
               className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all mt-4 disabled:opacity-50"
             >
-              {isLoading ? "Authenticating..." : "Secure Access"}
+              {/* {isLoading ? "Authenticating..." : "Secure Access"} */}
+              Secure Access
             </button>
             <p className="text-center text-[10px] text-sjcs-on-surface-variant/60 font-medium">
               By logging in, you agree to the SJCS Academic Honor Code.

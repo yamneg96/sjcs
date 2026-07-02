@@ -6,7 +6,7 @@ export default function LISSetupPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [localError, setLocalError] = useState("");
-  const { verifiedStudent, setupPassword, isLoading, error, clearError } = useAuthStore();
+  const { verifiedStudent} = useAuthStore();
   const navigate = useNavigate();
 
   if (!verifiedStudent) {
@@ -16,7 +16,7 @@ export default function LISSetupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
+    // clearError();
     setLocalError("");
 
     if (password.length < 6) {
@@ -28,10 +28,10 @@ export default function LISSetupPage() {
       return;
     }
 
-    const success = await setupPassword(verifiedStudent.studentId, password);
-    if (success) {
+    // const success = await setupPassword(verifiedStudent.studentId, password);
+    // if (success) {
       navigate({ to: "/lis/login" });
-    }
+    // }
   };
 
   return (
@@ -65,9 +65,9 @@ export default function LISSetupPage() {
               </p>
             </div>
 
-            {(error || localError) && (
+            {(localError) && (
               <div className="mb-6 p-4 rounded-lg bg-sjcs-error-container text-sjcs-on-error-container text-sm">
-                {error || localError}
+                {localError}
               </div>
             )}
 
@@ -98,10 +98,11 @@ export default function LISSetupPage() {
               </div>
               <button
                 type="submit"
-                disabled={isLoading}
+                // disabled={isLoading}
                 className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all disabled:opacity-50"
               >
-                {isLoading ? "Setting up..." : "Activate Account"}
+                {/* {isLoading ? "Setting up..." : "Activate Account"} */}
+                Activate Account
               </button>
             </form>
           </div>

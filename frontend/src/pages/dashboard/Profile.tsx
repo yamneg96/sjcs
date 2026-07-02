@@ -1,7 +1,7 @@
 import { useAuthStore } from "@/store/auth.store";
 
 export default function ProfilePage() {
-  const { student } = useAuthStore();
+  const { user } = useAuthStore();
 
   return (
     <main className="pt-32 pb-20 px-8 max-w-screen-2xl mx-auto min-h-screen">
@@ -17,8 +17,8 @@ export default function ProfilePage() {
             <div className="w-24 h-24 rounded-full bg-sjcs-surface-container-highest border-4 border-card flex items-center justify-center mb-4">
               <span className="material-symbols-outlined text-4xl text-sjcs-on-surface-variant">person</span>
             </div>
-            <h2 className="font-headline text-2xl font-bold">{student?.fullName || "Student Name"}</h2>
-            <p className="text-sjcs-on-surface-variant">Grade {student?.grade || "—"} • {student?.studentId || "SJCS000"}</p>
+            <h2 className="font-headline text-2xl font-bold">{user?.fullName || "Student Name"}</h2>
+            <p className="text-sjcs-on-surface-variant">Grade {user?.grade || "—"} • {user?.studentId || "SJCS000"}</p>
           </div>
         </div>
 

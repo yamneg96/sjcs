@@ -3,7 +3,7 @@ import { useRouter } from '@tanstack/react-router'
 import { useEffect } from 'react'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, student } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
   const router = useRouter()
 
   useEffect(() => {
@@ -14,14 +14,14 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
     // Role-based routing protection
     const path = window.location.pathname;
-    const isAdmin = student?.role === "admin";
+    const isAdmin = user?.role === "SuperAdmin";
 
     if (path.startsWith("/admin") && !isAdmin) {
       router.navigate({ to: "/dashboard" });
     } else if (path.startsWith("/dashboard") && isAdmin) {
-      router.navigate({ to: "/admin" });
+      router.navigate({ to: "/dashboard" });
     }
-  }, [isAuthenticated, student, router])
+  }, [isAuthenticated, user, router])
 
   if (!isAuthenticated) return null
 

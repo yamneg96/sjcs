@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useAuthStore } from "@/store/auth.store";
+import { authService } from "@/services/auth.service";
 
 export default function LISIdentityPage() {
   const [fullName, setFullName] = useState("");
   const [grade, setGrade] = useState<number>(9);
-  const { verifyStudent, isLoading, error, clearError } = useAuthStore();
+  // const { verifyStudent, isLoading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-    const success = await verifyStudent(fullName, grade);
+    // clearError();
+    const success = await authService.verifyStudent(fullName, grade);
     if (success) {
       navigate({ to: "/lis/security" });
     }
@@ -45,11 +45,11 @@ export default function LISIdentityPage() {
               <h2 className="font-headline text-xl font-bold">Student Lookup</h2>
             </div>
 
-            {error && (
+            {/* {error && (
               <div className="mb-6 p-4 rounded-lg bg-sjcs-error-container text-sjcs-on-error-container text-sm">
                 {error}
               </div>
-            )}
+            )} */}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -78,10 +78,11 @@ export default function LISIdentityPage() {
               </div>
               <button
                 type="submit"
-                disabled={isLoading}
+                // disabled={isLoading}
                 className="w-full leadership-gradient text-sjcs-on-primary py-4 rounded-lg font-bold uppercase tracking-[0.2em] text-xs shadow-lg hover:shadow-sjcs-primary/30 transition-all disabled:opacity-50"
               >
-                {isLoading ? "Verifying..." : "Verify Identity"}
+                {/* {isLoading ? "Verifying..." : "Verify Identity"} */}
+                Verify Identity
               </button>
             </form>
           </div>

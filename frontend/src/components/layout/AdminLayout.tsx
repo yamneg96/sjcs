@@ -118,7 +118,7 @@ export default function AdminLayout() {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-sjcs-outline-variant/30 px-6 py-2 flex justify-between items-center z-50">
-        <Link to="/admin" className="flex flex-col items-center gap-1 text-sjcs-primary">
+        {/* <Link to="/admin" className="flex flex-col items-center gap-1 text-sjcs-primary">
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>dashboard</span>
           <span className="text-[10px] font-bold">Home</span>
         </Link>
@@ -129,7 +129,7 @@ export default function AdminLayout() {
         <Link to="/admin/students" className="flex flex-col items-center gap-1 text-sjcs-on-surface-variant">
           <span className="material-symbols-outlined">school</span>
           <span className="text-[10px] font-bold">Students</span>
-        </Link>
+        </Link> */}
         <button className="flex flex-col items-center gap-1 text-sjcs-on-surface-variant">
           <span className="material-symbols-outlined">settings</span>
           <span className="text-[10px] font-bold">Menu</span>
