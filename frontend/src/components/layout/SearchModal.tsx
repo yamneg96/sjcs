@@ -10,25 +10,27 @@ interface SearchResult {
 }
 
 const allPages: SearchResult[] = [
+  // Public Pages
   { title: "Home", description: "Welcome to Saint Joseph Catholic School", path: "/", category: "Public", icon: "home" },
   { title: "About Us", description: "Our mission, vision, history, and leadership", path: "/about", category: "Public", icon: "info" },
   { title: "Academics", description: "Curriculum, STEM, humanities, theology programs", path: "/academics", category: "Public", icon: "school" },
-  { title: "Admissions", description: "Apply now, admissions process, schedule a tour", path: "/admissions", category: "Public", icon: "how_to_reg" },
+  { title: "Admissions", description: "Admissions process overview and information", path: "/admissions", category: "Public", icon: "how_to_reg" },
+  { title: "Apply Now", description: "Submit a student application online", path: "/apply", category: "Public", icon: "edit_document" },
   { title: "News & Blog", description: "Latest school news, events, and achievements", path: "/news", category: "Public", icon: "newspaper" },
   { title: "Clubs & Student Life", description: "Extracurricular activities and student organizations", path: "/clubs", category: "Public", icon: "groups" },
   { title: "Contact Us", description: "Get in touch, campus map, office hours", path: "/contact", category: "Public", icon: "mail" },
+
+  // Authentication
   { title: "LIS Portal", description: "Learning Intelligence System entry", path: "/lis", category: "LIS", icon: "login" },
-  { title: "LIS Login", description: "Sign in to your student account", path: "/lis/login", category: "LIS", icon: "lock" },
-  { title: "Student Dashboard", description: "Your academic overview and quick actions", path: "/dashboard", category: "Dashboard", icon: "dashboard" },
-  { title: "AI Learning Hub", description: "Ask AI questions about your curriculum", path: "/dashboard/ai-hub", category: "Dashboard", icon: "smart_toy" },
-  { title: "Study Session", description: "Start a focused timed study sprint", path: "/dashboard/study-session", category: "Dashboard", icon: "timer" },
-  { title: "Study History", description: "View your past study logs and progress", path: "/dashboard/study-history", category: "Dashboard", icon: "history" },
-  { title: "Mock Exams", description: "Practice with curriculum-aligned assessments", path: "/dashboard/mock-exams", category: "Dashboard", icon: "quiz" },
-  { title: "Resource Library", description: "Access e-books, worksheets, and materials", path: "/dashboard/materials", category: "Dashboard", icon: "menu_book" },
-  { title: "Student Profile", description: "View your academic profile and courses", path: "/dashboard/profile", category: "Dashboard", icon: "person" },
-  { title: "Account Settings", description: "Preferences, security, and sign out", path: "/dashboard/settings", category: "Dashboard", icon: "settings" },
-  { title: "Tuition Payments", description: "View payment history and make payments", path: "/dashboard/payments", category: "Dashboard", icon: "payments" },
-  { title: "Exam Results", description: "View your exam scores and feedback", path: "/dashboard/results", category: "Dashboard", icon: "assessment" },
+  { title: "Staff Login", description: "Sign in to the admin workspace", path: "/lis/login", category: "LIS", icon: "lock" },
+
+  // Admin Workspace
+  { title: "Workspace Overview", description: "Dashboard with live metrics and quick actions", path: "/dashboard", category: "Dashboard", icon: "dashboard" },
+  { title: "Admissions Desk", description: "Review applications, schedule interviews, update statuses", path: "/dashboard/admissions", category: "Dashboard", icon: "how_to_reg" },
+  { title: "Student CRM", description: "Manage enrolled students, reset passwords, bulk import", path: "/dashboard/students", category: "Dashboard", icon: "school" },
+  { title: "Faculty Governance", description: "Manage staff, assign grade-level access", path: "/dashboard/teachers", category: "Dashboard", icon: "co_present" },
+  { title: "Materials Hub", description: "Upload and manage curriculum files on Cloudflare R2", path: "/dashboard/materials", category: "Dashboard", icon: "folder_open" },
+  { title: "Settings", description: "Organization profile, theme, and billing", path: "/dashboard/settings", category: "Dashboard", icon: "settings" },
 ];
 
 interface SearchModalProps {
