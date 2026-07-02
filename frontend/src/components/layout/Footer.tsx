@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { SiGoogleplay } from 'react-icons/si';
+import { SiGoogleplay } from "react-icons/si";
+import lumoraTutorImg from "@/assets/lumora-tutor.png";
 
 export function Footer() {
   return (
@@ -130,8 +131,8 @@ export function Footer() {
 
       {/* Dominant Full-Width Mobile App Feature Banner */}
       <div className="mt-16 pt-10 border-t border-border/60 max-w-7xl mx-auto px-8">
-        <div className="bg-card dark:bg-sjcs-surface-container-low border border-border/80 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-          <div className="text-center md:text-left space-y-2">
+        <div className="bg-card dark:bg-sjcs-surface-container-low border border-border/80 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm overflow-hidden relative">
+          <div className="text-center md:text-left space-y-2 flex-1">
             <span className="inline-block px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-sjcs-primary bg-sjcs-primary/10 rounded-full">
               Mobile Learning Portal
             </span>
@@ -141,27 +142,34 @@ export function Footer() {
             <p className="text-muted-foreground text-sm max-w-xl">
               Download the official <strong className="text-foreground font-semibold">Lumora Tutor</strong> application on your Android device to manage study hours, book review sessions, and track assignments seamlessly.
             </p>
+            <div className="pt-2 flex justify-center md:justify-start">
+              {/* Leadership Gradient Play Store Badge Capsule */}
+              <a 
+                href="https://play.google.com/store" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="leadership-gradient flex items-center gap-3 px-5 py-2 rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sjcs-primary"
+                aria-label="Get it on Google Play"
+              >
+                <SiGoogleplay size={22} className="text-white" />
+                <div className="flex flex-col text-left select-none">
+                  <span className="text-[8px] font-medium text-white/50 uppercase tracking-widest leading-none">
+                    GET IT ON
+                  </span>
+                  <span className="text-xs font-bold text-white tracking-wide leading-tight mt-0.5">
+                    Google Play
+                  </span>
+                </div>
+              </a>
+            </div>
           </div>
           
-          <div className="flex shrink-0">
-            {/* Leadership Gradient Play Store Badge Capsule */}
-            <a 
-              href="https://play.google.com/store" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="leadership-gradient flex items-center gap-3 px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-[1.03] hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-sjcs-primary"
-              aria-label="Get it on Google Play"
-            >
-              <SiGoogleplay size={26} className="text-white" />
-              <div className="flex flex-col text-left select-none">
-                <span className="text-[9px] font-medium text-white/80 uppercase tracking-wider leading-none">
-                  GET IT ON
-                </span>
-                <span className="text-base font-bold text-white tracking-wide leading-tight mt-0.5">
-                  Google Play
-                </span>
-              </div>
-            </a>
+          <div className="flex shrink-0 max-w-[120px] rounded-xl overflow-hidden shadow-md border border-border/10">
+            <img
+              src={lumoraTutorImg}
+              alt="Lumora Tutor App"
+              className="w-full h-auto object-cover"
+            />
           </div>
         </div>
       </div>

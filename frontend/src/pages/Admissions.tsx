@@ -6,7 +6,7 @@ export default function AdmissionsPage() {
       <header className="relative pt-32 pb-20 overflow-hidden">
         <div className="max-w-7xl mx-auto px-8 relative z-10">
           <nav className="flex mb-8 text-[10px] uppercase tracking-[0.2em] font-bold text-sjcs-secondary font-label">
-            <span>Home</span><span className="mx-2">/</span>
+            <Link to="/">Home</Link><span className="mx-2">/</span>
             <span className="text-sjcs-on-surface-variant/60">Admissions</span>
           </nav>
           <h1 className="text-7xl font-headline font-extrabold tracking-tight text-sjcs-on-surface max-w-4xl leading-[1.1]">
@@ -28,7 +28,7 @@ export default function AdmissionsPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-20">
             {[
               { step: "01", title: "Inquire", desc: "Submit an inquiry form or schedule a campus visit to learn about our programs.", icon: "search" },
-              { step: "02", title: "Apply", desc: "Complete the online application with transcripts, teacher recommendations, and personal essay.", icon: "edit_document" },
+              { step: "02", title: "Apply", desc: "Complete the online application with student details and parent information.", icon: "edit_document" },
               { step: "03", title: "Interview", desc: "Meet with our admissions team and experience the SJCS campus community firsthand.", icon: "groups" },
               { step: "04", title: "Enroll", desc: "Receive your acceptance letter and join the SJCS family for the upcoming academic year.", icon: "celebration" },
             ].map((s) => (
@@ -45,7 +45,7 @@ export default function AdmissionsPage() {
             <h2 className="font-headline text-3xl font-bold mb-6">Ready to Apply?</h2>
             <p className="text-sjcs-on-surface-variant mb-10 max-w-lg mx-auto">Join a community of scholars, leaders, and people of faith. Applications for the 2025-2026 academic year are now open.</p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <Link to="/contact" className="leadership-gradient text-sjcs-on-primary px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">Start Application</Link>
+              <Link to="/apply" className="leadership-gradient text-sjcs-on-primary px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">Start Application</Link>
               <Link to="/contact" className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase">Schedule a Tour</Link>
             </div>
           </div>
@@ -54,3 +54,4 @@ export default function AdmissionsPage() {
     </main>
   );
 }
+

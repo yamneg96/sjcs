@@ -1,4 +1,7 @@
 import { Link } from "@tanstack/react-router";
+import lumoraTutorImg from "@/assets/lumora-tutor.png";
+import { SiGoogleplay } from "react-icons/si";
+
 
 export default function HomePage() {
   return (
@@ -322,6 +325,69 @@ export default function HomePage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lumora Tutor Socratic App Ad */}
+      <section className="py-24 bg-card border-y border-border/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-tr from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+        <div className="container mx-auto px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-6 space-y-6">
+              <span className="inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 rounded-full">
+                Socratic AI Engine
+              </span>
+              <h2 className="font-headline text-4xl lg:text-5xl font-black tracking-tight leading-none text-foreground">
+                Meet the <span className="text-secondary">Lumora Tutor</span>
+              </h2>
+              <p className="text-muted-foreground text-base leading-relaxed">
+                Unlock student potential with our dedicated AI-first mobile learning application. Featuring offline Bonsai model runtimes, OCR exam scanning, and a strict Socratic dialogue guardrail that guides scholars through problem breakdown instead of providing direct answers.
+              </p>
+              
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary bg-primary/10 p-1.5 rounded-lg text-lg">psychology</span>
+                  <p className="text-sm font-semibold text-foreground">Socratic method breakdown (never hands out answers)</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-secondary bg-secondary/10 p-1.5 rounded-lg text-lg">photo_camera</span>
+                  <p className="text-sm font-semibold text-foreground">Scan and transcribe physical workbooks instantly</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-emerald-500 bg-emerald-500/10 p-1.5 rounded-lg text-lg">cloud_off</span>
+                  <p className="text-sm font-semibold text-foreground">100% offline local tutoring engine compatibility</p>
+                </div>
+              </div>
+
+              <div className="pt-4 flex">
+                <a
+                  href="https://play.google.com/store"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="leadership-gradient text-white flex items-center gap-3 px-6 py-3 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg"
+                >
+                  <SiGoogleplay size={22} />
+                  <div className="flex flex-col text-left select-none">
+                    <span className="text-[8px] font-medium text-white/80 uppercase tracking-widest leading-none">GET IT ON</span>
+                    <span className="text-sm font-bold text-white tracking-wide leading-tight mt-0.5">Google Play</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="relative max-w-sm w-full group">
+                <div className="absolute -inset-1 bg-linear-to-r from-primary to-secondary rounded-3xl blur-md opacity-25 group-hover:opacity-40 transition duration-1000" />
+                <div className="relative bg-sjcs-surface-container rounded-3xl p-4 border border-border/10">
+                  <img
+                    src={lumoraTutorImg}
+                    alt="Lumora Tutor App interface"
+                    className="w-full h-auto rounded-2xl object-cover shadow-2xl transition duration-500 group-hover:scale-[1.01]"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

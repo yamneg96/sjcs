@@ -6,9 +6,7 @@ import {
 } from "@tanstack/react-router";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { AIFab } from "@/components/layout/AIFab";
 import ProtectedRoute from "./lib/protectedRoute";
-import AdminLayout from "@/components/layout/AdminLayout";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 
 import React, { lazy, Suspense } from "react";
@@ -25,6 +23,7 @@ const AdmissionsPage = lazy(() => import("@/pages/Admissions"));
 const NewsPage = lazy(() => import("@/pages/News"));
 const ClubsPage = lazy(() => import("@/pages/Clubs"));
 const ContactPage = lazy(() => import("@/pages/Contact"));
+const ApplyPage = lazy(() => import("@/pages/Apply"));
 
 // LIS pages
 const LISEntryPage = lazy(() => import("@/pages/lis/LISEntry"));
@@ -40,61 +39,50 @@ const OrgStudentsPage = lazy(() => import("@/pages/dashboard/Students"));
 const OrgTeachersPage = lazy(() => import("@/pages/dashboard/Teachers"));
 const MaterialsPage = lazy(() => import("@/pages/dashboard/Materials"));
 const SettingsPage = lazy(() => import("@/pages/dashboard/Settings"));
-const PaymentsPage = lazy(() => import("@/pages/dashboard/Payments"));
-
-// Admin pages
-const AdminDashboardPage = lazy(() => import("@/pages/admin/Dashboard"));
-const AdminUserManagementPage = lazy(() => import("@/pages/admin/UserManagement"));
-const AdminStudentManagementPage = lazy(() => import("@/pages/admin/StudentManagement"));
-const AdminTeacherManagementPage = lazy(() => import("@/pages/admin/TeacherManagement"));
-const AdminMaterialsManagementPage = lazy(() => import("@/pages/admin/MaterialsManagement"));
-const AdminAIMonitoringPage = lazy(() => import("@/pages/admin/AIMonitoring"));
-const AdminPaymentsFinancePage = lazy(() => import("@/pages/admin/PaymentsFinance"));
-const AdminAcademicManagementPage = lazy(() => import("@/pages/admin/AcademicManagement"));
-const AdminSystemSettingsPage = lazy(() => import("@/pages/admin/SystemSettings"));
-const AdminReportsAnalyticsPage = lazy(() => import("@/pages/admin/ReportsAnalytics"));
 
 /* =========================
    Reusable Wrappers
 ========================= */
 
 const Loader = () => (
-  <div className="flex items-center justify-center min-h-[60vh] text-gray-500">
-    Loading...
+  <div className="flex items-center justify-center min-h-[60vh] text-muted-foreground font-semibold">
+    <div className="animate-pulse">Loading Workspace...</div>
   </div>
 );
 
-const withSuspense = (Component: React.ComponentType) => {
-  return (
-    <Suspense fallback={<Loader />}>
-      <Component />
-    </Suspense>
-  );
-};
+const withSuspense = (Component: React.ComponentType) => (
+  <Suspense fallback={<Loader />}>
+    <Component />
+  </Suspense>
+);
 
-const withProtected = (Component: React.ComponentType) => {
-  return (
-    <Suspense fallback={<Loader />}>
-      <ProtectedRoute>
-        <Component />
-      </ProtectedRoute>
-    </Suspense>
-  );
-};
+const withProtected = (Component: React.ComponentType) => (
+  <Suspense fallback={<Loader />}>
+    <ProtectedRoute>
+      <Component />
+    </ProtectedRoute>
+  </Suspense>
+);
 
 /* =========================
    Root Layout
 ========================= */
 
 const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Navbar />
-      <Outlet />
-      <AIFab />
-      <Footer />
-    </>
-  ),
+  component: () => {
+    // Only render the generic Navbar and Footer if not inside dashboard
+    const isDashboard = window.location.pathname.startsWith("/dashboard");
+
+    return (
+      <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
+        {!isDashboard && <Navbar />}
+        <div className="flex-1">
+          <Outlet />
+        </div>
+        {!isDashboard && <Footer />}
+      </div>
+    );
+  },
 });
 
 /* =========================
@@ -141,6 +129,12 @@ const contactRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/contact",
   component: () => withSuspense(ContactPage),
+});
+
+const applyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/apply",
+  component: () => withSuspense(ApplyPage),
 });
 
 /* =========================
@@ -223,82 +217,6 @@ const settingsRoute = createRoute({
   component: () => withSuspense(SettingsPage),
 });
 
-const paymentsRoute = createRoute({
-  getParentRoute: () => dashboardLayoutRoute,
-  path: "/payments",
-  component: () => withSuspense(PaymentsPage),
-});
-
-/* =========================
-   Admin Panel Routes
-========================= */
-
-const adminRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/admin",
-  component: () => withProtected(AdminLayout),
-});
-
-const adminDashboardRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/",
-  component: () => withSuspense(AdminDashboardPage),
-});
-
-const adminUsersRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/users",
-  component: () => withSuspense(AdminUserManagementPage),
-});
-
-const adminStudentsRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/students",
-  component: () => withSuspense(AdminStudentManagementPage),
-});
-
-const adminTeachersRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/teachers",
-  component: () => withSuspense(AdminTeacherManagementPage),
-});
-
-const adminMaterialsRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/materials",
-  component: () => withSuspense(AdminMaterialsManagementPage),
-});
-
-const adminAIMonitoringRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/ai-monitoring",
-  component: () => withSuspense(AdminAIMonitoringPage),
-});
-
-const adminPaymentsFinanceRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/payments",
-  component: () => withSuspense(AdminPaymentsFinancePage),
-});
-
-const adminAcademicRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/academic",
-  component: () => withSuspense(AdminAcademicManagementPage),
-});
-
-const adminSystemSettingsRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/settings",
-  component: () => withSuspense(AdminSystemSettingsPage),
-});
-
-const adminReportsAnalyticsRoute = createRoute({
-  getParentRoute: () => adminRoute,
-  path: "/reports",
-  component: () => withSuspense(AdminReportsAnalyticsPage),
-});
-
 /* =========================
    Route Tree
 ========================= */
@@ -311,6 +229,7 @@ const routeTree = rootRoute.addChildren([
   newsRoute,
   clubsRoute,
   contactRoute,
+  applyRoute,
 
   lisRoute,
   lisIdentityRoute,
@@ -325,19 +244,6 @@ const routeTree = rootRoute.addChildren([
     orgTeachersRoute,
     materialsRoute,
     settingsRoute,
-    paymentsRoute,
-  ]),
-  adminRoute.addChildren([
-    adminDashboardRoute,
-    adminUsersRoute,
-    adminStudentsRoute,
-    adminTeachersRoute,
-    adminMaterialsRoute,
-    adminAIMonitoringRoute,
-    adminPaymentsFinanceRoute,
-    adminAcademicRoute,
-    adminSystemSettingsRoute,
-    adminReportsAnalyticsRoute,
   ]),
 ]);
 

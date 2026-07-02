@@ -1,56 +1,23 @@
-import { useState, useEffect } from "react";
-import api from "@/lib/api";
-
-interface ISubject {
-  _id: string;
-  name: string;
-  code: string;
-  grade: number;
-}
-
-interface IMaterial {
-  _id: string;
-  title: string;
-  materialType: "pdf" | "video" | "markdown" | "link";
-  contentUrl?: string;
-  subjectId: { _id: string; name: string } | string;
-  createdAt: string;
-}
+import React, { useState } from "react";
+import { useSubjects } from "@/hooks/use-subjects";
+import { useMaterials, useCreateMaterial, useDeleteMaterial, useUploadFile } from "@/hooks/use-materials";
+import type { MaterialType } from "@/types/api.types";
 
 export default function MaterialsPage() {
-  const [subjects, setSubjects] = useState<ISubject[]>([]);
-  const [materials, setMaterials] = useState<IMaterial[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
+  const { data: materials = [], isLoading: loadingMaterials } = useMaterials();
+
+  const { mutateAsync: createMaterial, isPending: submitting } = useCreateMaterial();
+  const { mutateAsync: deleteMaterial } = useDeleteMaterial();
+  const { mutateAsync: uploadFile, isPending: uploading } = useUploadFile();
 
   // Upload Form State
   const [title, setTitle] = useState("");
   const [subjectId, setSubjectId] = useState("");
-  const [materialType, setMaterialType] = useState<"pdf" | "video" | "markdown" | "link">("pdf");
+  const [materialType, setMaterialType] = useState<MaterialType>("pdf");
   const [file, setFile] = useState<File | null>(null);
-  const [directLink, setDirectLink] = useState(""); // if video/link type
-  
-  const [uploading, setUploading] = useState(false);
+  const [directLink, setDirectLink] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    fetchInitialData();
-  }, []);
-
-  const fetchInitialData = async () => {
-    setLoading(true);
-    try {
-      const subRes = await api.get("/subjects");
-      setSubjects(subRes.data?.data || []);
-
-      const matRes = await api.get("/materials");
-      setMaterials(matRes.data?.data || []);
-    } catch (err) {
-      console.error("Failed to load materials / subjects:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -61,61 +28,43 @@ export default function MaterialsPage() {
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !subjectId) {
-      alert("Title and Subject are required.");
+      alert("Title and Subject category selection are required.");
       return;
     }
 
-    setSubmitting(true);
     setUploadProgress("");
 
     try {
       let finalUrl = directLink;
 
-      // 1. If file is present, upload via R2 Storage route first
+      // 1. If file is present and type is pdf, upload via storage route first
       if (materialType === "pdf" && file) {
-        setUploading(true);
         setUploadProgress("Uploading file to Cloudflare R2...");
-        
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const uploadRes = await api.post("/storage/upload/public", formData, {
-          headers: { "Content-Type": "multipart/form-data" }
-        });
-
-        finalUrl = uploadRes.data?.data?.fileUrl;
-        setUploading(false);
+        const uploadRes = await uploadFile(file);
+        finalUrl = uploadRes.data.data.fileUrl;
         setUploadProgress("File uploaded successfully!");
       }
 
       if (materialType === "pdf" && !finalUrl) {
         alert("Please select a PDF file to upload.");
-        setSubmitting(false);
         return;
       }
 
       // 2. Submit material document to Materials API
-      const payload = {
+      await createMaterial({
         title,
         subjectId,
         materialType,
-        contentUrl: finalUrl,
-      };
+        contentUrl: finalUrl || undefined,
+      });
 
-      const res = await api.post("/materials", payload);
-      setMaterials([res.data?.data, ...materials]);
-
-      // Reset form
+      alert("Lesson material published successfully and cached for mobile learners!");
       setTitle("");
       setFile(null);
       setDirectLink("");
-      alert("Lesson material published successfully! Synced to Mobile client.");
-    } catch (err) {
-      console.error("Publishing failed:", err);
-      alert("Error: Failed to publish material.");
-    } finally {
-      setSubmitting(false);
-      setUploading(false);
+      setUploadProgress("");
+    } catch (err: any) {
+      alert("Failed to publish resource: " + (err.extractedMessage || err.message));
     }
   };
 
@@ -123,37 +72,43 @@ export default function MaterialsPage() {
     if (!confirm("Are you sure you want to remove this academic resource?")) return;
 
     try {
-      await api.delete(`/materials/${id}`);
-      setMaterials(materials.filter(m => m._id !== id));
+      await deleteMaterial(id);
       alert("Material removed.");
-    } catch (err) {
-      console.error("Delete failed:", err);
-      alert("Failed to delete lesson material.");
+    } catch (err: any) {
+      alert("Failed to delete lesson material: " + (err.extractedMessage || err.message));
     }
   };
 
+  const loading = loadingSubjects || loadingMaterials;
+
   return (
-    <main className="min-h-screen">
-      <header className="mb-10 animate-fade-in-down">
-        <span className="font-label text-xs uppercase tracking-[0.2em] text-sjcs-secondary font-bold mb-2 block">Materials Hub</span>
-        <h1 className="font-headline text-4xl font-extrabold tracking-tight text-sjcs-on-surface">Curriculum <span className="text-sjcs-primary">Repository</span></h1>
-        <p className="mt-2 text-sjcs-on-surface-variant text-sm">Upload syllabi, text book chapters, and support links. PDF files are saved to R2 storage for offline mobile caching.</p>
+    <main className="min-h-screen animate-fade-in text-foreground">
+      <header className="mb-10">
+        <span className="font-label text-xs uppercase tracking-[0.2em] text-secondary font-bold mb-2 block">
+          Materials Hub
+        </span>
+        <h1 className="font-headline text-4xl font-black tracking-tight text-foreground">
+          Curriculum <span className="text-primary">Repository</span>
+        </h1>
+        <p className="mt-2 text-muted-foreground text-sm max-w-xl">
+          Publish syllabi, textbook chapters, and support links. PDF files are saved to Cloudflare R2 key stores for offline mobile caching.
+        </p>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Publish form panel */}
-        <section className="lg:col-span-5 bg-sjcs-surface-container-lowest p-8 rounded-2xl border border-sjcs-outline-variant/10 shadow-ambient">
+        <section className="lg:col-span-5 bg-card p-6 md:p-8 rounded-2xl border border-border/10 shadow-ambient">
           <h3 className="font-headline font-bold text-lg mb-6 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sjcs-primary">publish</span>
+            <span className="material-symbols-outlined text-primary">publish</span>
             Add Lesson Resource
           </h3>
           <form onSubmit={handlePublish} className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Material Title</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Material Title</label>
               <input
                 type="text"
                 required
-                className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-sjcs-primary/20"
+                className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="e.g. Summa Theologiae Vol. I"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -162,10 +117,10 @@ export default function MaterialsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Academic Subject</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Academic Subject</label>
                 <select
                   required
-                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-sjcs-primary/20"
+                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-primary/20"
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
                 >
@@ -179,11 +134,11 @@ export default function MaterialsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Resource Type</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Resource Type</label>
                 <select
-                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-sjcs-primary/20"
+                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-primary/20"
                   value={materialType}
-                  onChange={(e) => setMaterialType(e.target.value as any)}
+                  onChange={(e) => setMaterialType(e.target.value as MaterialType)}
                 >
                   <option value="pdf">PDF Document</option>
                   <option value="video">Video URL</option>
@@ -195,9 +150,9 @@ export default function MaterialsPage() {
 
             {/* Input toggle depending on type */}
             {materialType === "pdf" ? (
-              <div className="space-y-2 border-2 border-dashed border-sjcs-outline-variant/15 p-6 rounded-xl text-center bg-sjcs-surface-container/30 hover:bg-sjcs-surface-container-high transition-all">
-                <span className="material-symbols-outlined text-4xl text-sjcs-secondary mb-2">upload_file</span>
-                <p className="text-xs text-sjcs-on-surface-variant">Select PDF document syllabus to sync (Max 10MB)</p>
+              <div className="space-y-2 border-2 border-dashed border-border/15 p-6 rounded-xl text-center bg-sjcs-surface-container/30 hover:bg-sjcs-surface-container-high transition-all">
+                <span className="material-symbols-outlined text-4xl text-secondary mb-2">upload_file</span>
+                <p className="text-xs text-muted-foreground">Select PDF document syllabus to sync (Max 10MB)</p>
                 <input
                   type="file"
                   accept=".pdf"
@@ -207,23 +162,23 @@ export default function MaterialsPage() {
                 />
                 <label
                   htmlFor="pdf-file-picker"
-                  className="mt-3 inline-block cursor-pointer bg-sjcs-surface-container text-sjcs-on-surface px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-sjcs-outline-variant/20 transition-all"
+                  className="mt-3 inline-block cursor-pointer bg-sjcs-surface-container text-foreground px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider hover:bg-border/20 transition-all border border-border/10"
                 >
                   Choose File
                 </label>
                 {file && (
-                  <p className="text-xs font-bold text-sjcs-primary mt-2 truncate">
+                  <p className="text-xs font-bold text-primary mt-2 truncate">
                     Selected: {file.name}
                   </p>
                 )}
               </div>
             ) : (
               <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-sjcs-on-surface-variant font-label">Content URL / Value</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Content URL / Value</label>
                 <input
                   type="url"
                   required
-                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-sjcs-primary/20"
+                  className="w-full px-4 py-2.5 bg-sjcs-surface-container rounded-xl text-xs font-semibold border-none outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g. https://youtube.com/watch?v=..."
                   value={directLink}
                   onChange={(e) => setDirectLink(e.target.value)}
@@ -232,7 +187,7 @@ export default function MaterialsPage() {
             )}
 
             {uploadProgress && (
-              <div className="text-xs font-semibold text-sjcs-secondary p-3 bg-sjcs-primary-container/20 rounded-xl border border-sjcs-primary/10">
+              <div className="text-xs font-semibold text-secondary p-3 bg-primary/5 rounded-xl border border-primary/10">
                 {uploadProgress}
               </div>
             )}
@@ -240,7 +195,7 @@ export default function MaterialsPage() {
             <button
               type="submit"
               disabled={submitting || uploading}
-              className="w-full leadership-gradient text-sjcs-on-primary py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg active:scale-98 transition-all disabled:opacity-50"
+              className="w-full leadership-gradient text-white py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] shadow-lg active:scale-98 transition-all disabled:opacity-50"
             >
               {uploading ? "Uploading File..." : submitting ? "Processing Resource..." : "Publish Material & Sync"}
             </button>
@@ -249,30 +204,32 @@ export default function MaterialsPage() {
 
         {/* Materials list review panel */}
         <section className="lg:col-span-7 flex flex-col gap-6">
-          <h3 className="font-headline font-bold text-lg">Active Resouces</h3>
-          <div className="bg-sjcs-surface-container-lowest rounded-2xl border border-sjcs-outline-variant/10 shadow-ambient overflow-hidden">
+          <h3 className="font-headline font-bold text-lg text-foreground">Active Resources</h3>
+          <div className="bg-card rounded-2xl border border-border/10 shadow-ambient overflow-hidden">
             {loading ? (
-              <div className="text-center py-20 text-xs text-sjcs-on-surface-variant/75 font-semibold">
-                Retrieving active curriculum...
+              <div className="text-center py-20 text-xs text-muted-foreground font-semibold">
+                <div className="animate-pulse">Retrieving active curriculum...</div>
               </div>
             ) : materials.length === 0 ? (
-              <div className="text-center py-20 text-xs text-sjcs-on-surface-variant/75 font-semibold flex flex-col items-center gap-3">
-                <span className="material-symbols-outlined text-4xl text-sjcs-primary/30">folder_zip</span>
+              <div className="text-center py-20 text-xs text-muted-foreground font-semibold flex flex-col items-center gap-3">
+                <span className="material-symbols-outlined text-4xl text-primary/30">folder_zip</span>
                 Repository is currently empty.
               </div>
             ) : (
-              <div className="divide-y divide-sjcs-outline-variant/10">
+              <div className="divide-y divide-border/10 animate-fade-in">
                 {materials.map((m) => {
                   const subjectName = typeof m.subjectId === "object" ? m.subjectId.name : "Subject";
                   return (
-                    <div key={m._id} className="p-5 flex justify-between items-center hover:bg-sjcs-surface-container-low/40 transition-colors group">
+                    <div key={m._id} className="p-5 flex justify-between items-center hover:bg-muted/20 transition-colors group">
                       <div className="flex items-center gap-3 truncate">
-                        <span className="material-symbols-outlined text-sjcs-on-surface-variant group-hover:text-sjcs-secondary duration-200">
+                        <span className="material-symbols-outlined text-muted-foreground group-hover:text-secondary duration-200">
                           {m.materialType === "pdf" ? "picture_as_pdf" : m.materialType === "video" ? "movie" : "link"}
                         </span>
                         <div className="truncate">
-                          <h4 className="text-xs font-black text-sjcs-on-surface truncate leading-tight">{m.title}</h4>
-                          <p className="text-[10px] text-sjcs-on-surface-variant mt-0.5">{subjectName} • Type: {m.materialType.toUpperCase()}</p>
+                          <h4 className="text-xs font-black text-foreground truncate leading-tight">{m.title}</h4>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            {subjectName} • Type: {m.materialType.toUpperCase()}
+                          </p>
                         </div>
                       </div>
 
@@ -282,17 +239,17 @@ export default function MaterialsPage() {
                             href={m.contentUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="text-xs font-bold text-sjcs-secondary hover:underline flex items-center gap-1"
+                            className="text-xs font-bold text-secondary hover:underline flex items-center gap-1"
                           >
                             Preview
                           </a>
                         )}
                         <button
                           onClick={() => handleDelete(m._id)}
-                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-rose-50 text-rose-500 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-sjcs-surface-container text-rose-500 transition-colors"
                           title="Delete Resource"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
                         </button>
                       </div>
                     </div>
