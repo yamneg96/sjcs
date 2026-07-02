@@ -27,6 +27,9 @@ import storageRoutes from "./modules/storage/storage.routes";
 const app = express();
 // ... (omitting lines for spacing alignment, let's keep exact matches)
 
+// --- ADD THIS LINE ---
+app.set('trust proxy', 1);
+
 /**
  * 🗄️ DATABASE CONNECTION
  */
