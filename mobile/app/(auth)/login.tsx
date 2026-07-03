@@ -54,7 +54,7 @@ export default function LoginScreen() {
             resizeMode="contain"
           />
           <Text className="text-xl font-bold font-headline mt-2 text-foreground text-center">
-            Saint Joseph Catholic School
+            Saint Joseph Catholic School | SJCS
           </Text>
           <Text className="text-xs text-muted-foreground mt-1">
             Student L.I.S. Learning Monolith
@@ -169,6 +169,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 64,
     height: 64,
+    borderRadius: 100,
   },
   input: {
     fontSize: 14,
