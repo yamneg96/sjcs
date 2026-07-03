@@ -22,6 +22,10 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
       ],
       "package": "com.yamneg2.lumoratutor"
@@ -64,6 +68,12 @@
       "eas": {
         "projectId": "192ca0c5-ff6a-42c3-bd16-e9334014819e"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/192ca0c5-ff6a-42c3-bd16-e9334014819e"
     }
   }
 }
