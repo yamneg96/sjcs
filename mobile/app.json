@@ -58,7 +58,8 @@
         }
       ],
       "expo-font",
-      "expo-local-authentication"
+      "expo-local-authentication",
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true
