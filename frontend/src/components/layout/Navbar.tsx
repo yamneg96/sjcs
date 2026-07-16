@@ -67,7 +67,7 @@ export function Navbar() {
         { to: "/dashboard", label: "Dashboard" },
       ]
     : [
-        { to: "/lis/login", label: "Login" },
+        { to: "/login", label: "Login" },
       ];
 
   const navLinks = [...baseNavLinks, ...authNav];

@@ -5,7 +5,7 @@ interface SearchResult {
   title: string;
   description: string;
   path: string;
-  category: "Public" | "LIS" | "Dashboard";
+  category: "Public" | "Dashboard";
   icon: string;
 }
 
@@ -21,8 +21,7 @@ const allPages: SearchResult[] = [
   { title: "Contact Us", description: "Get in touch, campus map, office hours", path: "/contact", category: "Public", icon: "mail" },
 
   // Authentication
-  { title: "LIS Portal", description: "Learning Intelligence System entry", path: "/lis", category: "LIS", icon: "login" },
-  { title: "Staff Login", description: "Sign in to the admin workspace", path: "/lis/login", category: "LIS", icon: "lock" },
+  { title: "Staff Login", description: "Sign in to the admin workspace", path: "/login", category: "Public", icon: "lock" },
 
   // Admin Workspace
   { title: "Workspace Overview", description: "Dashboard with live metrics and quick actions", path: "/dashboard", category: "Dashboard", icon: "dashboard" },

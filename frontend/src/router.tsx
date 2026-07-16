@@ -25,12 +25,8 @@ const ClubsPage = lazy(() => import("@/pages/Clubs"));
 const ContactPage = lazy(() => import("@/pages/Contact"));
 const ApplyPage = lazy(() => import("@/pages/Apply"));
 
-// LIS pages
-const LISEntryPage = lazy(() => import("@/pages/lis/LISEntry"));
-const LISIdentityPage = lazy(() => import("@/pages/lis/LISIdentity"));
-const LISSecurityPage = lazy(() => import("@/pages/lis/LISSecurity"));
-const LISSetupPage = lazy(() => import("@/pages/lis/LISSetup"));
-const LISLoginPage = lazy(() => import("@/pages/lis/LISLogin"));
+// Staff/Org authentication
+const LoginPage = lazy(() => import("@/pages/Login"));
 
 // Org Workspace Dashboard pages
 const DashboardPage = lazy(() => import("@/pages/dashboard/Dashboard"));
@@ -138,37 +134,13 @@ const applyRoute = createRoute({
 });
 
 /* =========================
-   LIS Routes (Auth Flow)
+   Staff/Org Login
 ========================= */
 
-const lisRoute = createRoute({
+const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/lis",
-  component: () => withSuspense(LISEntryPage),
-});
-
-const lisIdentityRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/lis/identity",
-  component: () => withSuspense(LISIdentityPage),
-});
-
-const lisSecurityRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/lis/security",
-  component: () => withSuspense(LISSecurityPage),
-});
-
-const lisSetupRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/lis/setup",
-  component: () => withSuspense(LISSetupPage),
-});
-
-const lisLoginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/lis/login",
-  component: () => withSuspense(LISLoginPage),
+  path: "/login",
+  component: () => withSuspense(LoginPage),
 });
 
 /* =========================
@@ -231,11 +203,7 @@ const routeTree = rootRoute.addChildren([
   contactRoute,
   applyRoute,
 
-  lisRoute,
-  lisIdentityRoute,
-  lisSecurityRoute,
-  lisSetupRoute,
-  lisLoginRoute,
+  loginRoute,
 
   dashboardLayoutRoute.addChildren([
     dashboardIndexRoute,

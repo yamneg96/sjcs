@@ -1,8 +1,9 @@
 import mongoose from "mongoose";
 import Subject, { ISubject } from "./subject.model";
-import Material from "../materials/material.model";
+import Material, { IMaterial } from "../materials/material.model";
 import { generateSlug } from "../../shared/utils/slug";
 import { ConflictError, NotFoundError, BadRequestError } from "../../shared/errors/errors";
+import { TenantRepository } from "../../infrastructure/database/tenant-repository";
 
 export interface IUpdateSubjectDTO {
   name?: string;
@@ -10,57 +11,62 @@ export interface IUpdateSubjectDTO {
   description?: string;
 }
 
+/**
+ * Reference implementation of the TenantRepository pattern (§12.2, ADR-004):
+ * the repository injects the active tenant from request context, so no method
+ * here hand-writes a `tenantId` filter — cross-tenant access is impossible by
+ * construction. Service methods no longer take a tenantId argument.
+ */
+const subjects = new TenantRepository<ISubject>(Subject);
+const materials = new TenantRepository<IMaterial>(Material);
+
 export class SubjectService {
   /**
-   * Create a new subject inside a tenant
+   * Create a new subject inside the active tenant
    */
   static async createSubject(
-    tenantId: string,
     createdBy: string,
     data: { name: string; grade: number; description?: string }
   ): Promise<ISubject> {
     const slug = generateSlug(data.name);
 
-    // Verify unique slug per tenant + grade
-    const existing = await Subject.findOne({ tenantId, grade: data.grade, slug });
+    // Verify unique slug per tenant + grade (tenant auto-scoped by the repo)
+    const existing = await subjects.findOne({ grade: data.grade, slug });
     if (existing) {
       throw new ConflictError(`Subject '${data.name}' already exists for grade ${data.grade}`);
     }
 
-    const subject = await Subject.create({
-      tenantId,
-      createdBy: new mongoose.Types.ObjectId(createdBy) as unknown as mongoose.Schema.Types.ObjectId,
+    return subjects.create({
+      createdBy: new mongoose.Types.ObjectId(createdBy) as unknown as mongoose.Types.ObjectId,
       name: data.name,
       slug,
       grade: data.grade,
       description: data.description,
-    });
-
-    return subject;
+    } as Partial<ISubject>);
   }
 
   /**
-   * List all subjects for a tenant, optionally filtered by student accessible grades
+   * List all subjects for the active tenant, optionally filtered by grades
    */
-  static async listSubjects(tenantId: string, allowedGrades?: number[]): Promise<ISubject[]> {
-    const filter: mongoose.FilterQuery<ISubject> = { tenantId };
+  static async listSubjects(allowedGrades?: number[]): Promise<ISubject[]> {
+    const filter: mongoose.FilterQuery<ISubject> = {};
 
     if (allowedGrades && allowedGrades.length > 0) {
       filter.grade = { $in: allowedGrades };
     }
 
-    return Subject.find(filter).sort({ grade: 1, name: 1 }).lean() as unknown as ISubject[];
+    return subjects.find(filter, { sort: { grade: 1, name: 1 }, lean: true });
   }
 
   /**
-   * Get single subject details
+   * Get single subject details (by id or slug)
    */
-  static async getSubject(tenantId: string, idOrSlug: string): Promise<ISubject> {
+  static async getSubject(idOrSlug: string): Promise<ISubject> {
     const filter = idOrSlug.match(/^[0-9a-fA-F]{24}$/)
-      ? { _id: idOrSlug, tenantId }
-      : { slug: idOrSlug, tenantId };
+      ? { _id: idOrSlug }
+      : { slug: idOrSlug };
 
-    const subject = await Subject.findOne(filter);
+    const subject = await subjects.findOne(filter);
     if (!subject) {
       throw new NotFoundError("Subject not found");
     }
@@ -71,11 +77,10 @@ export class SubjectService {
    * Update subject info
    */
   static async updateSubject(
-    tenantId: string,
     subjectId: string,
     updateData: IUpdateSubjectDTO
   ): Promise<ISubject> {
-    const subject = await Subject.findOne({ _id: subjectId, tenantId });
+    const subject = await subjects.findOne({ _id: subjectId });
     if (!subject) {
       throw new NotFoundError("Subject not found");
     }
@@ -91,10 +96,9 @@ export class SubjectService {
       subject.description = updateData.description;
     }
 
-    // Check if new grade + slug produces conflict
+    // Check if new grade + slug produces conflict within the tenant
     if (updateData.name || updateData.grade) {
-      const conflict = await Subject.findOne({
-        tenantId,
+      const conflict = await subjects.findOne({
         grade: subject.grade,
         slug: subject.slug,
         _id: { $ne: subjectId },
@@ -111,18 +115,18 @@ export class SubjectService {
   /**
    * Delete subject (only if no materials attached)
    */
-  static async deleteSubject(tenantId: string, subjectId: string): Promise<void> {
-    const subject = await Subject.findOne({ _id: subjectId, tenantId });
+  static async deleteSubject(subjectId: string): Promise<void> {
+    const subject = await subjects.findOne({ _id: subjectId });
     if (!subject) {
       throw new NotFoundError("Subject not found");
     }
 
-    // Check if there are materials references
-    const materialsCount = await Material.countDocuments({ tenantId, subjectId });
+    // Check for attached materials (also tenant-scoped by construction)
+    const materialsCount = await materials.count({ subjectId });
     if (materialsCount > 0) {
       throw new BadRequestError("Cannot delete subject with active lessons/materials attached");
     }
 
-    await Subject.deleteOne({ _id: subjectId, tenantId });
+    await subjects.deleteOne({ _id: subjectId });
   }
 }

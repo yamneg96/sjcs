@@ -7,7 +7,7 @@ const LogOut = () => {
 
   const handleLogout = () => {
     logout()
-    router.navigate({ to: "/lis/login" }) // ✅ proper redirect
+    router.navigate({ to: "/login" }) // ✅ proper redirect
   }
 
   return (

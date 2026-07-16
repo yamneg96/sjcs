@@ -5,6 +5,7 @@ import { NotFoundError, BadRequestError, ConflictError } from "../../shared/erro
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { eventBus } from "../../shared/events/event-bus";
+import { AuthService } from "../auth/auth.service";
 
 export class MemberService {
   /**
@@ -125,6 +126,9 @@ export class MemberService {
 
     member.status = "Suspended";
     await member.save();
+
+    // Revoke all active sessions so the suspended member is logged out everywhere.
+    await AuthService.logoutAll(memberId);
 
     eventBus.emit("member.suspended", { memberId, tenantId });
     return member;

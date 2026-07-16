@@ -7,6 +7,8 @@ import { connectDB } from "./config/db";
 import { errorHandler } from "./middleware/error.middleware";
 import { publicRateLimiter } from "./middleware/rate-limit.middleware";
 import { sendSuccess } from "./shared/utils/api-response";
+import { requestContextMiddleware } from "./shared/context/context.middleware";
+import { logger } from "./shared/utils/logger";
 
 import authRoutes from "./modules/auth/auth.routes";
 import organizationRoutes from "./modules/organizations/organization.routes";
@@ -23,6 +25,10 @@ import supportRoutes from "./modules/support/support.routes";
 import searchRoutes from "./modules/search/search.routes";
 import admissionRoutes from "./modules/admissions/admission.routes";
 import storageRoutes from "./modules/storage/storage.routes";
+import mobileRoutes from "./modules/mobile/mobile.routes";
+import academicYearRoutes from "./modules/academic-years/academic-year.routes";
+import sectionRoutes from "./modules/sections/section.routes";
+import resultRoutes from "./modules/results/results.routes";
 
 const app = express();
 // ... (omitting lines for spacing alignment, let's keep exact matches)
@@ -50,10 +56,21 @@ app.use(
 );
 
 /**
+ * 🧵 REQUEST CONTEXT (AsyncLocalStorage) — must run before logging/routes so
+ * every log line and downstream handler sees requestId/tenantId/userId.
+ */
+app.use(requestContextMiddleware);
+
+/**
  * 📈 LOGGING & RATING
  */
 if (env.NODE_ENV !== "test") {
-  app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
+  // Route HTTP access logs through the structured logger (context-tagged)
+  app.use(
+    morgan(env.NODE_ENV === "development" ? "dev" : "combined", {
+      stream: { write: (line: string) => logger.info(line.trim()) },
+    })
+  );
 }
 app.use(publicRateLimiter);
 
@@ -155,6 +172,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/organizations", organizationRoutes);
 app.use("/api/members", memberRoutes);
 app.use("/api/subjects", subjectRoutes);
+app.use("/api/academic-years", academicYearRoutes);
+app.use("/api/sections", sectionRoutes);
+app.use("/api/results", resultRoutes);
 app.use("/api/materials", materialRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/quizzes", quizRoutes);
@@ -166,6 +186,7 @@ app.use("/api/support", supportRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/admissions", admissionRoutes);
 app.use("/api/storage", storageRoutes);
+app.use("/api/mobile", mobileRoutes);
 
 /**
  * ❌ GLOBAL ERROR HANDLER (ALWAYS LAST)

@@ -1,12 +1,13 @@
 import { Response } from "express";
 import { AuthRequest } from "../../shared/types/auth.types";
 import StudyLog from "../learning/studylog.model";
+import StudySession from "./study-session.model";
 import { getAccessibleGrades } from "../../utils/grade-access";
 import { sendSuccess } from "../../shared/utils/api-response";
 import { asyncHandler } from "../../shared/utils/async-handler";
 import { LISService } from "./lis.service";
-import { BadRequestError } from "../../shared/errors/errors";
-import { askLISSchema } from "./lis.validation";
+import { BadRequestError, NotFoundError } from "../../shared/errors/errors";
+import { askLISSchema, startSessionSchema, endSessionSchema } from "./lis.validation";
 
 export const askLIS = asyncHandler(async (req: AuthRequest, res: Response) => {
   const tenantId = req.user?.tenantId;
@@ -74,20 +75,59 @@ export const getHistory = asyncHandler(async (req: AuthRequest, res: Response) =
 });
 
 export const startSession = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { subject } = req.body;
+  const tenantId = req.user?.tenantId;
+  const studentId = req.user?.id;
+  if (!tenantId || !studentId) {
+    throw new BadRequestError("Auth context required");
+  }
+
+  const parsed = startSessionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.errors[0].message);
+  }
+
+  const startedAt = new Date();
+  const session = await StudySession.create({
+    tenantId,
+    studentId,
+    subject: parsed.data.subject,
+    startedAt,
+  });
+
   sendSuccess(res, {
-    sessionId: `session_${Date.now()}`,
-    subject: subject || "general",
-    startedAt: new Date().toISOString(),
+    sessionId: session._id.toString(),
+    subject: session.subject,
+    startedAt: startedAt.toISOString(),
   }, "Study session started");
 });
 
 export const endSession = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { sessionId, duration } = req.body;
+  const tenantId = req.user?.tenantId;
+  const studentId = req.user?.id;
+  if (!tenantId || !studentId) {
+    throw new BadRequestError("Auth context required");
+  }
+
+  const parsed = endSessionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.errors[0].message);
+  }
+  const { sessionId, duration } = parsed.data;
+
+  const endedAt = new Date();
+  const session = await StudySession.findOneAndUpdate(
+    { _id: sessionId, tenantId, studentId },
+    { $set: { endedAt, durationSeconds: duration } },
+    { new: true }
+  );
+  if (!session) {
+    throw new NotFoundError("Study session not found");
+  }
+
   sendSuccess(res, {
-    sessionId,
-    duration,
-    endedAt: new Date().toISOString(),
+    sessionId: session._id.toString(),
+    duration: session.durationSeconds,
+    endedAt: endedAt.toISOString(),
     message: "Study session recorded successfully",
   }, "Study session ended");
 });

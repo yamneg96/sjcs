@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { IBaseDocument } from "../../shared/types/base.types";
 import { UserRole } from "../../shared/types/auth.types";
+import { baseSchemaPlugin } from "../../infrastructure/database/base-schema";
 
 export interface IUser extends IBaseDocument {
   fullName: string;
@@ -11,6 +12,9 @@ export interface IUser extends IBaseDocument {
   organizationId?: mongoose.Types.ObjectId; // References Organization
   grade?: number; // For Students and Individuals (9-12)
   grades?: number[]; // For Teachers to restrict accessible classroom grades
+  sectionId?: mongoose.Types.ObjectId; // Student's assigned Section (set at enrollment)
+  admissionNo?: string; // School admission number (set at enrollment)
+  guardianIds?: mongoose.Types.ObjectId[]; // Student → linked parent/guardian Users
   status: "Active" | "Suspended" | "Pending";
   isVerified: boolean;
   verificationToken?: string;
@@ -38,7 +42,10 @@ const userSchema = new Schema<IUser>(
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization" },
     grade: { type: Number },
     grades: { type: [Number], default: [] },
-    status: { 
+    sectionId: { type: Schema.Types.ObjectId, ref: "Section" },
+    admissionNo: { type: String, trim: true },
+    guardianIds: { type: [Schema.Types.ObjectId], ref: "User", default: [] },
+    status: {
       type: String, 
       enum: ["Active", "Suspended", "Pending"], 
       default: "Pending" 
@@ -55,5 +62,7 @@ const userSchema = new Schema<IUser>(
 
 // Compound index to ensure studentId is unique per organization/tenant
 userSchema.index({ tenantId: 1, studentId: 1 }, { unique: true, sparse: true });
+
+userSchema.plugin(baseSchemaPlugin);
 
 export default mongoose.model<IUser>("User", userSchema);

@@ -7,7 +7,12 @@ export const env = {
   MONGO_URI: process.env.MONGO_URI || "",
   DB_NAME: process.env.DB_NAME || "lumora",
   JWT_SECRET: process.env.JWT_SECRET || "fallback_secret",
+  // Access-token lifetime. Once web + mobile clients use the refresh flow this
+  // should drop to ~15m (§13.2); kept longer by default so current clients
+  // (which don't yet refresh) are not logged out mid-session.
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
+  // Rotating refresh-token lifetime, in days.
+  JWT_REFRESH_EXPIRES_DAYS: parseInt(process.env.JWT_REFRESH_EXPIRES_DAYS || "30", 10),
   
   // AI Keys
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",

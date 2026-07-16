@@ -33,7 +33,7 @@ export default function SettingsPage() {
 
   const handleLogout = () => {
     logout();
-    window.location.href = "/lis/login";
+    window.location.href = "/login";
   };
 
   const handleSavePreferences = async () => {

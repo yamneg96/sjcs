@@ -31,8 +31,8 @@ api.interceptors.response.use(
       localStorage.removeItem("sjcs_token");
       localStorage.removeItem("sjcs_user");
       // Only redirect if not already on an auth page
-      if (!window.location.pathname.startsWith("/lis")) {
-        window.location.href = "/lis/login";
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
       }
     }
 

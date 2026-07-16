@@ -10,8 +10,20 @@ import {
   setupPasswordFirstTimeSchema,
   requestPasswordResetSchema,
   resetPasswordSchema,
+  refreshSchema,
+  logoutSchema,
 } from "./auth.validation";
 import { BadRequestError } from "../../shared/errors/errors";
+import { ISessionMeta } from "./auth.service";
+
+/** Extracts session metadata (device binding, user agent, IP) from a request. */
+function sessionMeta(req: Request): ISessionMeta {
+  return {
+    deviceId: typeof req.body?.deviceId === "string" ? req.body.deviceId : undefined,
+    userAgent: req.headers["user-agent"],
+    ipAddress: req.ip,
+  };
+}
 
 export const registerIndividual = asyncHandler(async (req: Request, res: Response) => {
   const parsed = registerIndividualSchema.safeParse(req.body);
@@ -52,8 +64,28 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     throw new BadRequestError(parsed.error.errors[0].message);
   }
 
-  const result = await AuthService.login(parsed.data);
+  const result = await AuthService.login(parsed.data, sessionMeta(req));
   sendSuccess(res, result, "Logged in successfully");
+});
+
+export const refresh = asyncHandler(async (req: Request, res: Response) => {
+  const parsed = refreshSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.errors[0].message);
+  }
+
+  const tokens = await AuthService.refreshTokens(parsed.data.refreshToken, sessionMeta(req));
+  sendSuccess(res, tokens, "Token refreshed");
+});
+
+export const logout = asyncHandler(async (req: Request, res: Response) => {
+  const parsed = logoutSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.errors[0].message);
+  }
+
+  await AuthService.logout(parsed.data.refreshToken);
+  sendSuccess(res, null, "Logged out successfully");
 });
 
 export const verifyStudentFirstTime = asyncHandler(async (req: Request, res: Response) => {

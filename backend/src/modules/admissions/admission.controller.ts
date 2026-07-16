@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { AuthRequest, UserRole } from "../../shared/types/auth.types";
 import { AdmissionService } from "./admission.service";
-import { submitApplicationSchema, updateStatusSchema } from "./admission.validation";
+import { submitApplicationSchema, updateStatusSchema, enrollSchema } from "./admission.validation";
 import { sendSuccess } from "../../shared/utils/api-response";
 import { asyncHandler } from "../../shared/utils/async-handler";
 import { BadRequestError } from "../../shared/errors/errors";
@@ -80,6 +80,40 @@ export const getApplication = asyncHandler(async (req: AuthRequest, res: Respons
   const admissionId = req.params.admissionId as string;
   const admission = await AdmissionService.getById(tenantId, admissionId);
   sendSuccess(res, admission, "Application retrieved successfully");
+});
+
+/**
+ * Enroll an APPROVED applicant → creates a student record + section assignment.
+ * Restricted to registrar/director/admin/owner.
+ */
+export const enrollApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const tenantId = req.user?.tenantId;
+  const actorId = req.user?.id;
+  if (!tenantId || !actorId) throw new BadRequestError("Auth context required");
+
+  const allowed = [
+    UserRole.ORG_OWNER,
+    UserRole.ORG_ADMIN,
+    UserRole.DIRECTOR,
+    UserRole.REGISTRAR,
+    UserRole.SUPER_ADMIN,
+  ];
+  if (!req.user?.role || !allowed.includes(req.user.role)) {
+    throw new BadRequestError("Permission denied: registrar/admin access required");
+  }
+
+  const parsed = enrollSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.errors[0].message);
+  }
+
+  const result = await AdmissionService.enroll(
+    tenantId,
+    req.params.admissionId as string,
+    actorId as string,
+    parsed.data
+  );
+  sendSuccess(res, result, "Applicant enrolled successfully", 201);
 });
 
 /**

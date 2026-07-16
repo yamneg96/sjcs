@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { useAuthStore } from "@/store/auth.store";
 import { useStudyHistory } from "@/hooks/use-records";
-import { BookOpenIcon, BrainIcon, AwardIcon, SparklesIcon, CalendarIcon } from "lucide-react-native";
+import { BookOpenIcon, BrainIcon, AwardIcon, SparklesIcon, CalendarIcon, CpuIcon } from "lucide-react-native";
 
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
@@ -101,6 +101,23 @@ export default function HomeScreen() {
           </View>
           <Text className="text-secondary text-xs font-semibold">Take →</Text>
         </Button>
+
+        <Button
+          variant="outline"
+          className="h-16 justify-between items-center rounded-2xl px-4 border-border/60"
+          onPress={() => router.push("/models" as never)}
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="bg-primary/10 p-2 rounded-xl">
+              <CpuIcon className="text-primary size-5" />
+            </View>
+            <View className="items-start">
+              <Text className="text-sm font-bold text-foreground">Offline AI Models</Text>
+              <Text className="text-xs text-muted-foreground">Download once, study without internet</Text>
+            </View>
+          </View>
+          <Text className="text-primary text-xs font-semibold">Manage →</Text>
+        </Button>
       </View>
 
       {/* Recent Activity Timeline */}
@@ -108,7 +125,7 @@ export default function HomeScreen() {
         <Text className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
           Recent Study Activity
         </Text>
-        <Button variant="ghost" size="sm" className="px-0" onPress={refetch}>
+        <Button variant="ghost" size="sm" className="px-0" onPress={() => refetch()}>
           <Text className="text-xs font-medium text-primary">Refresh</Text>
         </Button>
       </View>

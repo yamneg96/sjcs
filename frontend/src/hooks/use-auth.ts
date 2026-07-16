@@ -28,20 +28,6 @@ export function useStudentLogin() {
   });
 }
 
-export function useVerifyStudent() {
-  return useMutation({
-    mutationFn: ({ fullName, grade }: { fullName: string; grade: number }) =>
-      authService.verifyStudent(fullName, grade),
-  });
-}
-
-export function useSetupPassword() {
-  return useMutation({
-    mutationFn: ({ studentId, password }: { studentId: string; password: string }) =>
-      authService.setupPassword(studentId, password),
-  });
-}
-
 export function useForgotPassword() {
   return useMutation({
     mutationFn: ({ email }: { email: string }) =>

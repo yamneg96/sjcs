@@ -8,7 +8,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.navigate({ to: "/lis/login" })
+      router.navigate({ to: "/login" })
       return;
     }
 

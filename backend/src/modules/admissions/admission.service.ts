@@ -1,7 +1,13 @@
+import mongoose from "mongoose";
+import crypto from "crypto";
 import Admission, { AdmissionStatus, IAdmission } from "./admission.model";
+import User, { IUser } from "../users/user.model";
+import Section from "../sections/section.model";
 import { NotificationService } from "../notifications/notification.service";
-import { SubmitApplicationDTO, UpdateStatusDTO } from "./admission.validation";
-import { NotFoundError, BadRequestError } from "../../shared/errors/errors";
+import { SubmitApplicationDTO, UpdateStatusDTO, EnrollDTO } from "./admission.validation";
+import { NotFoundError, BadRequestError, ConflictError } from "../../shared/errors/errors";
+import { UserRole } from "../../shared/types/auth.types";
+import { eventBus } from "../../shared/events/event-bus";
 
 // Valid state transitions for the admission workflow
 const VALID_TRANSITIONS: Record<AdmissionStatus, AdmissionStatus[]> = {
@@ -154,6 +160,120 @@ export class AdmissionService {
 
     await admission.save();
     return admission;
+  }
+
+  /**
+   * Enrollment (§9.1): converts an APPROVED applicant into a real student
+   * record — assigns a section (with capacity check), issues an admission
+   * number, and optionally creates/links a parent guardian account. The
+   * student is created in "Pending" status and activates via the normal
+   * verify-student → setup-password flow.
+   */
+  static async enroll(
+    tenantId: string,
+    admissionId: string,
+    actorId: string,
+    data: EnrollDTO
+  ): Promise<{ admission: IAdmission; student: IUser; parentLinked: boolean }> {
+    const admission = await Admission.findOne({ _id: admissionId, tenantId });
+    if (!admission) throw new NotFoundError("Admission application not found");
+    if (admission.status !== "APPROVED") {
+      throw new BadRequestError("Only APPROVED applications can be enrolled");
+    }
+    if (admission.enrolledStudentId) {
+      throw new ConflictError("This applicant has already been enrolled");
+    }
+
+    // Validate the section: same tenant, matching grade, and not over capacity.
+    const section = await Section.findOne({ _id: data.sectionId, tenantId });
+    if (!section) throw new BadRequestError("Section not found");
+    if (section.grade !== admission.gradeAppliedFor) {
+      throw new BadRequestError(
+        `Section is grade ${section.grade} but the applicant applied for grade ${admission.gradeAppliedFor}`
+      );
+    }
+    const currentCount = await User.countDocuments({
+      tenantId,
+      sectionId: section._id,
+      role: UserRole.STUDENT,
+    });
+    if (currentCount >= section.capacity) {
+      throw new ConflictError("Section is at full capacity");
+    }
+
+    const orgObjectId = new mongoose.Types.ObjectId(tenantId);
+    const fullName = `${admission.studentFirstName} ${admission.studentLastName}`.trim();
+    const rand = () => crypto.randomBytes(3).toString("hex").toUpperCase();
+    const admissionNo = `ADM-${new Date().getFullYear()}-${rand()}`;
+    const studentId = `S${admission.gradeAppliedFor}-${rand()}`;
+
+    // Create the student record (Pending until the family activates the account).
+    const student = await User.create({
+      tenantId,
+      organizationId: orgObjectId,
+      fullName,
+      studentId,
+      admissionNo,
+      grade: admission.gradeAppliedFor,
+      sectionId: section._id,
+      role: UserRole.STUDENT,
+      status: "Pending",
+      isVerified: false,
+      createdBy: actorId,
+    });
+
+    // Mark enrolled immediately so a retry can't double-enroll.
+    admission.enrolledStudentId = student._id;
+    admission.enrolledAt = new Date();
+    await admission.save();
+
+    // Optionally create/link a parent guardian account (email is globally unique).
+    let parentLinked = false;
+    if (data.createParentAccount) {
+      let parent = await User.findOne({ email: admission.parentEmail });
+      if (parent && parent.role !== UserRole.PARENT) {
+        // Email already belongs to a non-parent account — skip to avoid a clash.
+        parent = null;
+      } else if (!parent) {
+        parent = await User.create({
+          tenantId,
+          organizationId: orgObjectId,
+          fullName: admission.parentName,
+          email: admission.parentEmail,
+          role: UserRole.PARENT,
+          status: "Pending",
+          isVerified: false,
+          createdBy: actorId,
+        });
+      }
+      if (parent) {
+        student.guardianIds = [parent._id];
+        await student.save();
+        parentLinked = true;
+      }
+    }
+
+    eventBus.emit("admission.enrolled", {
+      tenantId,
+      admissionId: admission._id,
+      studentId: student._id,
+      sectionId: section._id,
+    });
+
+    await NotificationService.sendEmail(
+      admission.parentEmail,
+      "Enrollment Confirmed — Welcome!",
+      `<h2>Dear ${admission.parentName},</h2>
+       <p><strong>${fullName}</strong> has been enrolled.</p>
+       <ul>
+         <li><strong>Admission No:</strong> ${admissionNo}</li>
+         <li><strong>Class:</strong> Grade ${section.grade}${section.name}</li>
+       </ul>
+       <p>Your child can now activate their student account in the Lumora app using their full name and grade.</p>
+       <br/><p>Welcome to the family!<br/>The Admissions Team</p>`
+    );
+
+    return { admission, student, parentLinked };
   }
 
   /**

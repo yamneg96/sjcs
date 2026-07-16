@@ -22,10 +22,6 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.USE_BIOMETRIC",
-        "android.permission.USE_FINGERPRINT",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.USE_BIOMETRIC",
         "android.permission.USE_FINGERPRINT"
       ],
       "package": "com.yamneg2.lumoratutor"
@@ -48,13 +44,25 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow TrustPay Mobile to access your camera to scan invoices, receipts, and documents."
+          "cameraPermission": "Allow Lumora Tutor to access your camera to scan homework questions and lesson pages."
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "Allow TrustPay Mobile to access your photo library to select and upload stored receipt images."
+          "photosPermission": "Allow Lumora Tutor to access your photo library to select images of homework to solve."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow Lumora Tutor to access your microphone for voice tutoring."
+        }
+      ],
+      [
+        "react-native-audio-api",
+        {
+          "iosMicrophonePermission": "Allow Lumora Tutor to access your microphone for voice tutoring."
         }
       ],
       "expo-font",

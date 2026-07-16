@@ -2,9 +2,39 @@ import axios from "axios";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 import Organization, { IOrganization } from "../organizations/organization.model";
-import { IAIRequestOptions, IAIResponse } from "./ai.types";
+import { IAIRequestOptions, IAIResponse, IAIEmbeddingResponse } from "./ai.types";
 import { env } from "../../config/env";
 import { ForbiddenError, BadRequestError } from "../../shared/errors/errors";
+import {
+  AICapabilityTask,
+  IEduContext,
+  buildEducationalInstruction,
+  formatEducationalResponse,
+} from "./educational-pipeline";
+import { moderateContent, MODERATION_FALLBACK } from "./moderation";
+
+export interface IEducationalAIRequest {
+  task: AICapabilityTask;
+  prompt: string;
+  eduContext?: IEduContext;
+  tenantId?: string;
+  isStudentFacing?: boolean;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+// Interface to bypass Groq SDK type limitations for the embeddings endpoint safely
+interface IGroqEmbeddingsSDK {
+  embeddings: {
+    create(options: { input: string; model: string }): Promise<{
+      data: Array<{ embedding: number[] }>;
+    }>;
+  };
+}
+
+// Current stable embedding models on Groq, tried in order until one succeeds
+const EMBEDDING_MODELS = ["nomic-embed-text-v1_5", "snowflake-arctic-embed-m-v2.0"];
+const EMBEDDING_DIMENSIONS = 768;
 
 const SOCRATIC_INSTRUCTION = 
   "You are an AI learning assistant on the Lumora Platform. Adhere strictly to the Socratic method: " +
@@ -213,6 +243,83 @@ export class AIGateway {
       },
       provider,
       model: modelName || "default",
+    };
+  }
+
+  /**
+   * The single educational AI entry point (§16.3 rules 2 & 4). Enforces, by
+   * construction, that every request is wrapped by the Educational Pipeline on
+   * the way in (context → instruction) and passes moderation + the Educational
+   * Formatter on the way out. Feature modules (mobile BFF, chat, quiz, lis)
+   * should call THIS rather than assembling prompts and calling
+   * `generateCompletion` directly.
+   */
+  static async completeEducational(
+    request: IEducationalAIRequest
+  ): Promise<IAIResponse & { moderationFlagged: boolean }> {
+    // 1. Moderate the input (fail fast on unsafe requests).
+    const inputMod = moderateContent(request.prompt);
+    if (inputMod.flagged) {
+      throw new BadRequestError("This request can't be processed for safety reasons.");
+    }
+
+    // 2. Educational Pipeline (in): assemble the curriculum-aware instruction.
+    const systemInstruction = buildEducationalInstruction(request.task, request.eduContext);
+
+    // 3. Generate via the orchestrated provider path.
+    const result = await this.generateCompletion(request.prompt, {
+      systemInstruction,
+      tenantId: request.tenantId,
+      isStudentFacing: request.isStudentFacing ?? request.task === "chat",
+      temperature: request.temperature,
+      maxTokens: request.maxTokens,
+    });
+
+    // 4. Moderate the output, then apply the Educational Formatter (out).
+    const outputMod = moderateContent(result.text);
+    const text = outputMod.flagged
+      ? MODERATION_FALLBACK
+      : formatEducationalResponse(result.text);
+
+    return { ...result, text, moderationFlagged: outputMod.flagged };
+  }
+
+  /**
+   * Generates a text embedding, the only path any module may use for vector
+   * search / RAG ingestion (never instantiate a provider SDK directly — see
+   * CLAUDE.md: "Backend modules call AIGateway only").
+   *
+   * Falls back across models on failure, then to a dummy vector as a last
+   * resort so a provider outage never surfaces as a 500 during ingestion.
+   */
+  static async generateEmbedding(text: string): Promise<IAIEmbeddingResponse> {
+    if (!env.GROQ_API_KEY) {
+      return {
+        embedding: new Array(EMBEDDING_DIMENSIONS).fill(0.01),
+        model: "dummy",
+        isFallback: true,
+      };
+    }
+
+    const groq = new Groq({ apiKey: env.GROQ_API_KEY }) as unknown as IGroqEmbeddingsSDK;
+
+    for (const modelId of EMBEDDING_MODELS) {
+      try {
+        const response = await groq.embeddings.create({ input: text, model: modelId });
+        const embedding = response?.data?.[0]?.embedding;
+        if (embedding) {
+          return { embedding, model: modelId, isFallback: false };
+        }
+      } catch (err: any) {
+        console.warn(`💥 Embedding model ${modelId} failed: ${err.message}. Trying next...`);
+      }
+    }
+
+    console.error("CRITICAL: All embedding models failed. Using dummy vector.");
+    return {
+      embedding: new Array(EMBEDDING_DIMENSIONS).fill(0.01),
+      model: "dummy",
+      isFallback: true,
     };
   }
 }

@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { AuthRequest, IJWTPayload, UserRole } from "../shared/types/auth.types";
 import { UnauthorizedError, ForbiddenError } from "../shared/errors/errors";
+import { patchContext } from "../shared/context/request-context";
 
 /**
  * Protect routes - Verifies JWT token and populates req.user
@@ -22,6 +23,14 @@ export const protect = (
 
     const decoded = jwt.verify(token, env.JWT_SECRET) as IJWTPayload;
     req.user = decoded;
+
+    // Propagate identity into the request context (logging + tenant scoping)
+    patchContext({
+      userId: decoded.id,
+      tenantId: decoded.tenantId,
+      roles: decoded.role ? [decoded.role] : [],
+    });
+
     next();
   } catch (error: any) {
     if (error.name === "TokenExpiredError") {

@@ -6,6 +6,7 @@ import {
   listApplications,
   getApplication,
   addDocument,
+  enrollApplicant,
 } from "./admission.controller";
 import { submitApplicationSchema } from "./admission.validation";
 import { AdmissionService } from "./admission.service";
@@ -54,5 +55,6 @@ router.get("/", listApplications);
 router.get("/:admissionId", getApplication);
 router.patch("/:admissionId/status", updateStatus);
 router.post("/:admissionId/documents", addDocument);
+router.post("/:admissionId/enroll", enrollApplicant);
 
 export default router;

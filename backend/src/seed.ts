@@ -5,7 +5,6 @@ import User, { IUser } from "./modules/users/user.model";
 import Quiz from "./modules/quiz/quiz.model";
 import StudyLog from "./modules/learning/studylog.model";
 import Organization from "./modules/organizations/organization.model";
-import Student from "./modules/students/student.model";
 import { UserRole } from "./shared/types/auth.types";
 
 /**
@@ -20,7 +19,6 @@ async function clearDatabase() {
     Organization.deleteMany({}),
     Quiz.deleteMany({}),
     StudyLog.deleteMany({}),
-    Student.deleteMany({}),
   ]);
   console.log("✅ Database cleared cleanly.");
 }

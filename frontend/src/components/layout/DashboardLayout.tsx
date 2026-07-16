@@ -104,7 +104,7 @@ export default function DashboardLayout() {
           <button 
             onClick={() => {
               logout();
-              window.location.href = "/lis/login";
+              window.location.href = "/login";
             }}
             className="flex items-center gap-3 px-4 py-3 bg-sjcs-error-container/10 hover:bg-sjcs-error-container/20 text-sjcs-error rounded-xl transition-all w-full text-left font-bold text-[10px] uppercase tracking-widest border border-sjcs-error-container/10"
           >

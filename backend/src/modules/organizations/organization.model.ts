@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IBaseDocument } from "../../shared/types/base.types";
+import { baseSchemaPlugin } from "../../infrastructure/database/base-schema";
 
 export interface IOrganization extends IBaseDocument {
   name: string;
@@ -58,5 +59,7 @@ organizationSchema.pre("validate", function (next) {
   }
   next();
 });
+
+organizationSchema.plugin(baseSchemaPlugin);
 
 export default mongoose.model<IOrganization>("Organization", organizationSchema);

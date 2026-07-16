@@ -4,6 +4,8 @@ import {
   registerOrganization,
   verifyEmail,
   login,
+  refresh,
+  logout,
   verifyStudentFirstTime,
   setupPasswordFirstTime,
   requestPasswordReset,
@@ -20,6 +22,8 @@ router.post("/register", registerIndividual);
 router.post("/register-organization", registerOrganization);
 router.get("/verify-email", verifyEmail);
 router.post("/login", login);
+router.post("/refresh", refresh);
+router.post("/logout", logout);
 
 // First-time student activation routes
 router.post("/verify-student", verifyStudentFirstTime);

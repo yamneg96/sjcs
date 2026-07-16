@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IBaseDocument } from "../../shared/types/base.types";
+import { baseSchemaPlugin } from "../../infrastructure/database/base-schema";
 
 export interface IMaterial extends IBaseDocument {
   title: string;
@@ -34,5 +35,7 @@ const materialSchema = new Schema<IMaterial>(
 // Add index to accelerate RAG text searches
 materialSchema.index({ tenantId: 1, subjectId: 1, grade: 1 });
 materialSchema.index({ textParsed: "text" }); // Text index for keyword lookup
+
+materialSchema.plugin(baseSchemaPlugin);
 
 export default mongoose.model<IMaterial>("Material", materialSchema);

@@ -1,14 +1,31 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { randomUUID } from "crypto";
 import User, { IUser } from "../users/user.model";
 import Organization, { IOrganization } from "../organizations/organization.model";
+import Session from "./session.model";
 import { env } from "../../config/env";
 import { UserRole, IJWTPayload } from "../../shared/types/auth.types";
 import { generateSlug } from "../../shared/utils/slug";
 import { BadRequestError, UnauthorizedError, ConflictError, NotFoundError } from "../../shared/errors/errors";
 import { eventBus } from "../../shared/events/event-bus";
 import { studentGradeAccessMap } from "../../shared/utils/grade-access-mapping";
+import { logger } from "../../shared/utils/logger";
+
+export interface ISessionMeta {
+  deviceId?: string;
+  userAgent?: string;
+  ipAddress?: string;
+}
+
+export interface IAuthTokens {
+  token: string; // short-ish-lived access JWT (kept as `token` for client compat)
+  refreshToken: string; // opaque rotating refresh token
+}
+
+const sha256 = (value: string): string =>
+  crypto.createHash("sha256").update(value).digest("hex");
 
 export interface IRegisterIndividualDTO {
   fullName: string;
@@ -56,6 +73,134 @@ export interface IResetPasswordDTO {
 }
 
 export class AuthService {
+  /**
+   * Signs a short-lived access JWT for a user (§13.2). `accessibleGrades`
+   * mirrors the grade-access policy applied at login.
+   */
+  private static signAccessToken(user: IUser, deviceId?: string): string {
+    let accessibleGrades: number[] = [];
+    if (user.role === UserRole.STUDENT || user.role === UserRole.INDIVIDUAL) {
+      accessibleGrades = studentGradeAccessMap(user.grade || 9);
+    } else if (user.role === UserRole.TEACHER) {
+      accessibleGrades = user.grades || [];
+    } else {
+      accessibleGrades = [9, 10, 11, 12];
+    }
+
+    const payload: IJWTPayload = {
+      id: user._id.toString(),
+      email: user.email || "",
+      role: user.role,
+      tenantId: user.tenantId,
+      grades: accessibleGrades,
+      ...(deviceId ? { deviceId } : {}),
+    };
+
+    return jwt.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions["expiresIn"],
+    });
+  }
+
+  /**
+   * Issues an access + refresh token pair and opens a new session (a new
+   * rotation family). Only the refresh token's hash is persisted.
+   */
+  private static async issueTokens(user: IUser, meta: ISessionMeta = {}): Promise<IAuthTokens> {
+    const refreshToken = crypto.randomBytes(48).toString("hex");
+    const expiresAt = new Date(Date.now() + env.JWT_REFRESH_EXPIRES_DAYS * 86400000);
+
+    await Session.create({
+      userId: user._id,
+      tenantId: user.tenantId,
+      familyId: randomUUID(),
+      refreshTokenHash: sha256(refreshToken),
+      deviceId: meta.deviceId,
+      userAgent: meta.userAgent,
+      ipAddress: meta.ipAddress,
+      expiresAt,
+      lastUsedAt: new Date(),
+    });
+
+    return { token: this.signAccessToken(user, meta.deviceId), refreshToken };
+  }
+
+  /**
+   * Rotates a refresh token: validates it, issues a fresh access+refresh pair,
+   * and revokes the presented token. Reuse of an already-rotated token revokes
+   * the entire family (compromise response, §47.2).
+   */
+  static async refreshTokens(rawRefreshToken: string, meta: ISessionMeta = {}): Promise<IAuthTokens> {
+    const hash = sha256(rawRefreshToken);
+    const session = await Session.findOne({ refreshTokenHash: hash });
+
+    if (!session) {
+      throw new UnauthorizedError("Invalid refresh token");
+    }
+
+    // Reuse detection: a revoked token was presented → the family is compromised.
+    if (session.revokedAt) {
+      await Session.updateMany(
+        { familyId: session.familyId, revokedAt: null },
+        { $set: { revokedAt: new Date(), reusedAt: new Date() } }
+      );
+      logger.warn("Refresh token reuse detected — family revoked", {
+        userId: session.userId.toString(),
+        familyId: session.familyId,
+      });
+      throw new UnauthorizedError("Session no longer valid. Please log in again.");
+    }
+
+    if (session.expiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedError("Session expired. Please log in again.");
+    }
+
+    const user = await User.findById(session.userId);
+    if (!user || user.status === "Suspended") {
+      throw new UnauthorizedError("Account is not active");
+    }
+
+    // Rotate: revoke the current token, open a new one in the same family.
+    const newRefreshToken = crypto.randomBytes(48).toString("hex");
+    session.revokedAt = new Date();
+    await session.save();
+
+    await Session.create({
+      userId: user._id,
+      tenantId: user.tenantId,
+      familyId: session.familyId,
+      refreshTokenHash: sha256(newRefreshToken),
+      deviceId: meta.deviceId ?? session.deviceId,
+      userAgent: meta.userAgent ?? session.userAgent,
+      ipAddress: meta.ipAddress ?? session.ipAddress,
+      expiresAt: new Date(Date.now() + env.JWT_REFRESH_EXPIRES_DAYS * 86400000),
+      lastUsedAt: new Date(),
+    });
+
+    return {
+      token: this.signAccessToken(user, meta.deviceId ?? session.deviceId),
+      refreshToken: newRefreshToken,
+    };
+  }
+
+  /**
+   * Revokes the session behind a refresh token (single-device logout).
+   * Idempotent — an unknown/already-revoked token is a no-op.
+   */
+  static async logout(rawRefreshToken: string): Promise<void> {
+    await Session.updateOne(
+      { refreshTokenHash: sha256(rawRefreshToken), revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+  }
+
+  /** Revokes every active session for a user (logout everywhere / on suspend). */
+  static async logoutAll(userId: string): Promise<void> {
+    await Session.updateMany(
+      { userId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
+    );
+  }
+
   /**
    * Register a new individual learner
    */
@@ -166,7 +311,10 @@ export class AuthService {
   /**
    * General Login flow (supports email and student names + org slug)
    */
-  static async login(credentials: ILoginDTO): Promise<{ token: string; user: Partial<IUser> & { id: string } }> {
+  static async login(
+    credentials: ILoginDTO,
+    meta: ISessionMeta = {}
+  ): Promise<{ token: string; refreshToken: string; user: Partial<IUser> & { id: string } }> {
     let user: IUser | null = null;
 
     if ("email" in credentials) {
@@ -218,33 +366,12 @@ export class AuthService {
       throw new UnauthorizedError("Your account has been suspended. Contact support.");
     }
 
-    // Determine grade access levels
-    let accessibleGrades: number[] = [];
-    if (user.role === UserRole.STUDENT || user.role === UserRole.INDIVIDUAL) {
-      accessibleGrades = studentGradeAccessMap(user.grade || 9);
-    } else if (user.role === UserRole.TEACHER) {
-      accessibleGrades = user.grades || [];
-    } else {
-      // Admins have access to everything
-      accessibleGrades = [9, 10, 11, 12];
-    }
-
-    const payload: IJWTPayload = {
-      id: user._id.toString(),
-      email: user.email || "",
-      role: user.role,
-      tenantId: user.tenantId,
-      grades: accessibleGrades,
-    };
-
-    const token = jwt.sign(
-      payload,
-      env.JWT_SECRET,
-      { expiresIn: env.JWT_EXPIRES_IN as jwt.SignOptions['expiresIn'] }
-    );
+    // Issue access + refresh token pair and open a session.
+    const { token, refreshToken } = await this.issueTokens(user, meta);
 
     return {
       token,
+      refreshToken,
       user: {
         id: user._id.toString(),
         fullName: user.fullName,

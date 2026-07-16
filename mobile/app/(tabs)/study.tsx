@@ -2,13 +2,23 @@ import React, { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView, ActivityIndicator, TextInput } from "react-native";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useAskLIS, useStartStudySession, useEndStudySession } from "@/hooks/use-records";
-import { BrainIcon, SendIcon, PlayIcon, SquareIcon } from "lucide-react-native";
+import { useStartStudySession, useEndStudySession } from "@/hooks/use-records";
+import { AIEngine } from "@/modules/ai/engine/ai.engine";
+import { AIRoute } from "@/modules/ai/types";
+import { BrainIcon, SendIcon, PlayIcon, SquareIcon, SmartphoneIcon, CloudIcon } from "lucide-react-native";
+
+interface TutorMessage {
+  role: "user" | "ai";
+  text: string;
+  /** Transparency panel (§45): where the answer came from. */
+  route?: AIRoute;
+}
 
 export default function StudyTutorScreen() {
   const [subject, setSubject] = useState("Theology");
   const [question, setQuestion] = useState("");
-  const [conversation, setConversation] = useState<{ role: "user" | "ai"; text: string }[]>([]);
+  const [conversation, setConversation] = useState<TutorMessage[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
 
   // Session state
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -17,11 +27,10 @@ export default function StudyTutorScreen() {
 
   const startSessionMutation = useStartStudySession();
   const endSessionMutation = useEndStudySession();
-  const askMutation = useAskLIS();
 
   // Timer effect
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isSessionActive) {
       interval = setInterval(() => {
         setSecondsElapsed((prev) => prev + 1);
@@ -32,7 +41,7 @@ export default function StudyTutorScreen() {
 
   const handleStartSession = () => {
     startSessionMutation.mutate(
-      { subject },
+      subject,
       {
         onSuccess: (res) => {
           if (res.success && res.data) {
@@ -71,28 +80,29 @@ export default function StudyTutorScreen() {
     );
   };
 
-  const handleAsk = () => {
-    if (!question.trim()) return;
+  const handleAsk = async () => {
+    if (!question.trim() || isThinking) return;
     const userMsg = question.trim();
     setQuestion("");
     setConversation((prev) => [...prev, { role: "user", text: userMsg }]);
+    setIsThinking(true);
 
-    askMutation.mutate(
-      { question: userMsg, subject },
-      {
-        onSuccess: (res) => {
-          if (res.success && res.data) {
-            setConversation((prev) => [...prev, { role: "ai", text: res.data.answer }]);
-          }
-        },
-        onError: (err: any) => {
-          setConversation((prev) => [
-            ...prev,
-            { role: "ai", text: `Error: ${err.message || "Failed to generate AI tutor response."}` },
-          ]);
-        },
-      }
-    );
+    try {
+      // The AI Engine is the single entry point: it attaches educational
+      // context and routes local (on-device) / cloud / fallback per request.
+      const result = await AIEngine.complete(userMsg, { eduContext: { subject } });
+      setConversation((prev) => [
+        ...prev,
+        { role: "ai", text: result.text, route: result.route },
+      ]);
+    } catch (err: any) {
+      setConversation((prev) => [
+        ...prev,
+        { role: "ai", text: `Error: ${err.message || "Failed to generate AI tutor response."}` },
+      ]);
+    } finally {
+      setIsThinking(false);
+    }
   };
 
   const formatTime = (secs: number) => {
@@ -187,9 +197,21 @@ export default function StudyTutorScreen() {
               >
                 {msg.text}
               </Text>
+              {msg.role === "ai" && msg.route && msg.route !== "fallback" && (
+                <View className="flex-row items-center gap-1 mt-2">
+                  {msg.route === "local" ? (
+                    <SmartphoneIcon size={11} className="text-muted-foreground" />
+                  ) : (
+                    <CloudIcon size={11} className="text-muted-foreground" />
+                  )}
+                  <Text className="text-[10px] text-muted-foreground">
+                    {msg.route === "local" ? "Answered on-device" : "Answered via cloud"}
+                  </Text>
+                </View>
+              )}
             </View>
           ))}
-          {askMutation.isPending && (
+          {isThinking && (
             <View className="bg-secondary/40 max-w-[85%] self-start p-4 rounded-2xl rounded-tl-none mb-3 flex-row items-center gap-2">
               <ActivityIndicator size="small" className="text-primary" />
               <Text className="text-xs text-muted-foreground italic">LIS tutor is thinking...</Text>
@@ -200,7 +222,7 @@ export default function StudyTutorScreen() {
         <View className="flex-1 items-center justify-center p-6">
           <BrainIcon size={64} className="text-muted-foreground/60 mb-2" />
           <Text className="text-center text-sm text-muted-foreground">
-            Socratic learning session is inactive. Click "Start Session" above to interact with your AI tutor.
+            Socratic learning session is inactive. Click &ldquo;Start Session&rdquo; above to interact with your AI tutor.
           </Text>
         </View>
       )}
@@ -220,7 +242,7 @@ export default function StudyTutorScreen() {
             size="icon"
             className="rounded-xl h-11 w-11 bg-primary items-center justify-center"
             onPress={handleAsk}
-            disabled={askMutation.isPending || !question.trim()}
+            disabled={isThinking || !question.trim()}
           >
             <SendIcon size={16} color="#fff" />
           </Button>

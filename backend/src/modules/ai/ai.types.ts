@@ -19,3 +19,10 @@ export interface IAIResponse {
   provider: string;
   model: string;
 }
+
+export interface IAIEmbeddingResponse {
+  embedding: number[];
+  model: string;
+  /** True when every embedding provider failed and a dummy vector was returned to avoid a 500. */
+  isFallback: boolean;
+}

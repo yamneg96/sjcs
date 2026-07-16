@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../shared/errors/AppError";
 import { sendError } from "../shared/utils/api-response";
 import { env } from "../config/env";
+import { logger } from "../shared/utils/logger";
 
 export const errorHandler = (
   err: any,
@@ -53,9 +54,18 @@ export const errorHandler = (
     message = "Auth token expired";
   }
 
-  // Log non-operational errors
-  if (env.NODE_ENV === "development" || !(err instanceof AppError)) {
-    console.error("💥 SYSTEM ERROR:", err);
+  // Log non-operational errors with request context (requestId/tenantId/userId)
+  if (!(err instanceof AppError)) {
+    logger.error("Unhandled error", {
+      name: err.name,
+      message: err.message,
+      statusCode,
+      path: req.originalUrl,
+      method: req.method,
+      stack: env.NODE_ENV === "development" ? err.stack : undefined,
+    });
+  } else if (env.NODE_ENV === "development") {
+    logger.warn("Operational error", { message: err.message, statusCode, path: req.originalUrl });
   }
 
   sendError(

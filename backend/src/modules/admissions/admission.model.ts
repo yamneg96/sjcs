@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IBaseDocument } from "../../shared/types/base.types";
+import { baseSchemaPlugin } from "../../infrastructure/database/base-schema";
 
 export type AdmissionStatus =
   | "INQUIRY"
@@ -44,6 +45,10 @@ export interface IAdmission extends IBaseDocument {
   // Previous school info
   previousSchool?: string;
   transferReason?: string;
+
+  // Enrollment (set when an APPROVED applicant is converted into a student)
+  enrolledStudentId?: mongoose.Types.ObjectId;
+  enrolledAt?: Date;
 }
 
 const admissionDocumentSchema = new Schema<IAdmissionDocument>(
@@ -91,11 +96,17 @@ const admissionSchema = new Schema<IAdmission>(
     // Previous school
     previousSchool: { type: String, trim: true },
     transferReason: { type: String, trim: true },
+
+    // Enrollment
+    enrolledStudentId: { type: Schema.Types.ObjectId, ref: "User" },
+    enrolledAt: { type: Date },
   },
   { timestamps: true }
 );
 
 admissionSchema.index({ tenantId: 1, status: 1 });
 admissionSchema.index({ tenantId: 1, parentEmail: 1 });
+
+admissionSchema.plugin(baseSchemaPlugin);
 
 export default mongoose.model<IAdmission>("Admission", admissionSchema);

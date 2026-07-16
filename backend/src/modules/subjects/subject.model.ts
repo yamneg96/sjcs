@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { IBaseDocument } from "../../shared/types/base.types";
+import { baseSchemaPlugin } from "../../infrastructure/database/base-schema";
 
 export interface ISubject extends IBaseDocument {
   name: string;
@@ -25,5 +26,7 @@ const subjectSchema = new Schema<ISubject>(
 
 // Compound index to ensure uniqueness of subjects per tenant + grade + slug
 subjectSchema.index({ tenantId: 1, grade: 1, slug: 1 }, { unique: true });
+
+subjectSchema.plugin(baseSchemaPlugin);
 
 export default mongoose.model<ISubject>("Subject", subjectSchema);

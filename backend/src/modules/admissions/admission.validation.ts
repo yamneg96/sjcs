@@ -21,5 +21,11 @@ export const updateStatusSchema = z.object({
   reviewerNotes: z.string().optional(),
 });
 
+export const enrollSchema = z.object({
+  sectionId: z.string().regex(/^[0-9a-fA-F]{24}$/, "Valid sectionId is required"),
+  createParentAccount: z.boolean().optional().default(true),
+});
+
 export type SubmitApplicationDTO = z.infer<typeof submitApplicationSchema>;
 export type UpdateStatusDTO = z.infer<typeof updateStatusSchema>;
+export type EnrollDTO = z.infer<typeof enrollSchema>;
