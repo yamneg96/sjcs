@@ -151,6 +151,38 @@ export async function aiComplete(req: AuthRequest, res: Response): Promise<void>
 }
 
 /**
+ * POST /api/mobile/ai/transcribe
+ * Voice pipeline step 1 (§44): audio → transcript via the AI Gateway's ASR
+ * provider. Returns the transcript ONLY — the app shows it for editing before
+ * any tutoring request, so ASR errors are recoverable. Audio is never stored.
+ */
+export async function aiTranscribe(req: AuthRequest, res: Response): Promise<void> {
+  const file = (req as AuthRequest & { file?: Express.Multer.File }).file;
+  if (!file?.buffer?.length) {
+    throw new BadRequestError("An audio file is required");
+  }
+
+  const language = req.body?.language === "am" || req.body?.language === "en"
+    ? req.body.language
+    : undefined;
+
+  const result = await AIGateway.transcribe(file.buffer, {
+    language,
+    fileName: file.originalname,
+    mimeType: file.mimetype,
+    tenantId: req.user!.tenantId,
+  });
+
+  if (result.isFallback) {
+    throw new BadRequestError(
+      "Voice transcription isn't available right now. You can type your question instead."
+    );
+  }
+
+  sendSuccess(res, result, "Transcribed");
+}
+
+/**
  * POST /api/mobile/sync/learning-events
  * Batched, idempotent flush of the device's offline learning-event queue
  * (§46). Duplicate clientEventIds are silently skipped so retries are safe.

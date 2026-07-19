@@ -17,6 +17,11 @@ export const env = {
   // AI Keys
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || "",
   GROQ_API_KEY: process.env.GROQ_API_KEY || "",
+  // Ethio-ASR: Amharic/English speech-to-text behind the AI Gateway (§24.2).
+  // When unset, the gateway falls back to a Whisper-class provider, then to a
+  // sandbox stub — the voice pipeline degrades honestly rather than crashing.
+  ETHIO_ASR_URL: process.env.ETHIO_ASR_URL || "",
+  ETHIO_ASR_API_KEY: process.env.ETHIO_ASR_API_KEY || "",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || "",
   
   // Cloudflare R2 Storage (S3-compatible)

@@ -29,6 +29,8 @@ import mobileRoutes from "./modules/mobile/mobile.routes";
 import academicYearRoutes from "./modules/academic-years/academic-year.routes";
 import sectionRoutes from "./modules/sections/section.routes";
 import resultRoutes from "./modules/results/results.routes";
+import platformRoutes from "./modules/platform/platform.routes";
+import notificationRoutes from "./modules/notifications/notification.routes";
 
 const app = express();
 // ... (omitting lines for spacing alignment, let's keep exact matches)
@@ -175,6 +177,8 @@ app.use("/api/subjects", subjectRoutes);
 app.use("/api/academic-years", academicYearRoutes);
 app.use("/api/sections", sectionRoutes);
 app.use("/api/results", resultRoutes);
+app.use("/api/platform", platformRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/materials", materialRoutes);
 app.use("/api/chats", chatRoutes);
 app.use("/api/quizzes", quizRoutes);

@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * The "Leadership Gradient" (red → blue) that the web app defines as a
+ * `.leadership-gradient` CSS class does NOT live here: React Native has no CSS
+ * `linear-gradient`, so it can't be a utility class. It's implemented once with
+ * expo-linear-gradient in components/ui/gradient-button.tsx (<GradientButton> /
+ * <GradientView>) using the same two stops as --primary (#af101a) and
+ * --secondary (#005faf) below. Primary CTAs and hero surfaces use those; solid
+ * `bg-primary`/`bg-secondary` remain available for chips, accents and icons.
+ */
+
 @layer base {
   :root {
     /* SJCSA AI Learning Assistant - Light Theme */

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import { useTeachers, useCreateTeacher, useSuspendMember, useActivateMember } from "@/hooks/use-members";
 import type { IMember } from "@/types/api.types";
 
@@ -38,8 +39,8 @@ export default function OrgTeachersPage() {
       setAddEmail("");
       setAddGrades([9]);
       setShowAddForm(false);
-    } catch (err: any) {
-      alert("Faculty onboarding failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Faculty onboarding failed: " + getErrorMessage(err));
     }
   };
 
@@ -63,8 +64,8 @@ export default function OrgTeachersPage() {
         await suspendMember(teacher._id);
       }
       alert("Faculty status updated successfully.");
-    } catch (err: any) {
-      alert("Failed to modify: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to modify: " + getErrorMessage(err));
     }
   };
 

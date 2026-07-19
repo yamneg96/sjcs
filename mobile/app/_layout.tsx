@@ -3,12 +3,14 @@ import '@/global.css';
 import { NAV_THEME } from '@/lib/theme';
 import { ThemeProvider } from 'expo-router/react-navigation';
 import { PortalHost } from '@rn-primitives/portal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, router, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'nativewind';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/auth.store';
-import { useEffect } from 'react';
+import { ThemeToggleFab } from '@/components/ui/theme-toggle-fab';
+import { useEffect, useRef } from 'react';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -30,7 +32,7 @@ function NavigationGuard() {
 
   useEffect(() => {
     const inAuthGroup = segments[0] === '(auth)';
-    
+
     if (!isAuthenticated && !inAuthGroup) {
       // Redirect to sign-in page if not authenticated and not in auth screens
       router.replace('/(auth)/login');
@@ -44,17 +46,31 @@ function NavigationGuard() {
 }
 
 export default function RootLayout() {
-  const { colorScheme } = useColorScheme();
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const savedScheme = useAuthStore((state) => state.colorScheme);
+  const applied = useRef(false);
+
+  // Bridge the persisted preference into NativeWind on cold start — NativeWind's
+  // own scheme resets to the device default each launch, so without this the
+  // user's saved light/dark choice would be forgotten.
+  useEffect(() => {
+    if (!applied.current) {
+      applied.current = true;
+      if (savedScheme) setColorScheme(savedScheme);
+    }
+  }, [savedScheme, setColorScheme]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <NavigationGuard />
-        <PortalHost />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+          <NavigationGuard />
+          {/* Movable, global theme toggle — rides over every screen. */}
+          <ThemeToggleFab />
+          <PortalHost />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </GestureHandlerRootView>
   );
 }
-
-

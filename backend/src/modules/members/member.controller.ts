@@ -19,6 +19,18 @@ export const createStudent = asyncHandler(async (req: AuthRequest, res: Response
   sendSuccess(res, { id: student._id, fullName: student.fullName, studentId: student.studentId }, "Student created successfully", 201);
 });
 
+/**
+ * Parent portal: the children linked to the requesting parent (§32).
+ */
+export const getMyChildren = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const tenantId = req.user?.tenantId;
+  const parentId = req.user?.id;
+  if (!tenantId || !parentId) throw new BadRequestError("Auth context required");
+
+  const children = await MemberService.getMyChildren(tenantId, parentId);
+  sendSuccess(res, children, "Children retrieved successfully");
+});
+
 export const importStudents = asyncHandler(async (req: AuthRequest, res: Response) => {
   const tenantId = req.user?.tenantId;
   if (!tenantId) throw new BadRequestError("Auth tenant context required");

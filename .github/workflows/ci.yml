@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch supersedes an in-flight run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend — lint, typecheck, security suites
+    runs-on: ubuntu-latest
+
+    services:
+      # Single-node replica set: transactions (§17.4) don't exist on standalone.
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1}).ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      MONGO_URI: mongodb://localhost:27017
+      DB_NAME: lumora_ci
+      JWT_SECRET: ci-test-secret
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install
+        working-directory: backend
+        run: npm ci
+
+      - name: Lint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: backend
+        run: npm run typecheck
+
+      # Non-negotiable gates (§49): tenant isolation, results time-lock,
+      # grade integrity (two-person + audit), refresh rotation/reuse.
+      # A failure here must block the merge.
+      - name: Security & integration suites
+        working-directory: backend
+        run: npm test
+
+  frontend:
+    name: Frontend — lint, typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+
+  mobile:
+    name: Mobile — typecheck + AI boundary rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install
+        working-directory: mobile
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+      # Pure-logic suites (SM-2 scheduling, parsers). Screens/native modules
+      # need a dev build and belong in E2E.
+      - name: Unit tests
+        working-directory: mobile
+        run: npm test
+
+      # ADR-001/002/003: the runtime and ML Kit may only be touched inside
+      # modules/ai/**. Feature/screen code must go through AIEngine.
+      - name: AI boundary check (ADR-001/002/003)
+        working-directory: mobile
+        run: |
+          echo "Checking for forbidden imports outside modules/ai/…"
+          if grep -rnE "from ['\"](react-native-executorch|@infinitered/react-native-mlkit)" \
+               app components hooks lib store api 2>/dev/null; then
+            echo "::error::Feature code must not import the AI runtime or ML Kit directly — use AIEngine (ADR-001/002)."
+            exit 1
+          fi
+          echo "✅ No direct runtime/ML Kit imports outside modules/ai/"
+
+      - name: Forbid llama.rn (ADR-001)
+        working-directory: mobile
+        run: |
+          if grep -q '"llama.rn"' package.json; then
+            echo "::error::llama.rn is banned — react-native-executorch is the only local runtime (ADR-001)."
+            exit 1
+          fi
+          echo "✅ llama.rn absent"
+
+  backend-mlkit-boundary:
+    name: Backend — ML Kit must not exist (ADR-002)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert no ML Kit dependency on the backend
+        run: |
+          if grep -riE "mlkit|ml-kit" backend/package.json; then
+            echo "::error::The backend must never depend on ML Kit (ADR-002)."
+            exit 1
+          fi
+          echo "✅ Backend dependency tree is ML Kit-free"

@@ -24,6 +24,16 @@ const NewsPage = lazy(() => import("@/pages/News"));
 const ClubsPage = lazy(() => import("@/pages/Clubs"));
 const ContactPage = lazy(() => import("@/pages/Contact"));
 const ApplyPage = lazy(() => import("@/pages/Apply"));
+const TrackApplicationPage = lazy(() => import("@/pages/TrackApplication"));
+
+// Parent portal
+const ParentPortalPage = lazy(() => import("@/pages/portal/ParentPortal"));
+
+// Platform (super admin) portal
+const AdminLayout = lazy(() => import("@/components/layout/AdminLayout"));
+const AdminDashboardPage = lazy(() => import("@/pages/admin/Dashboard"));
+const AdminOrganizationsPage = lazy(() => import("@/pages/admin/Organizations"));
+const AdminModelsPage = lazy(() => import("@/pages/admin/Models"));
 
 // Staff/Org authentication
 const LoginPage = lazy(() => import("@/pages/Login"));
@@ -66,8 +76,11 @@ const withProtected = (Component: React.ComponentType) => (
 
 const rootRoute = createRootRoute({
   component: () => {
-    // Only render the generic Navbar and Footer if not inside dashboard
-    const isDashboard = window.location.pathname.startsWith("/dashboard");
+    // Authenticated surfaces (staff workspace, parent portal) carry their own
+    // chrome — only public pages get the marketing Navbar/Footer.
+    const path = window.location.pathname;
+    const isDashboard =
+      path.startsWith("/dashboard") || path.startsWith("/portal") || path.startsWith("/admin");
 
     return (
       <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
@@ -131,6 +144,50 @@ const applyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/apply",
   component: () => withSuspense(ApplyPage),
+});
+
+const trackRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/track",
+  component: () => withSuspense(TrackApplicationPage),
+});
+
+/* =========================
+   Parent Portal (protected)
+========================= */
+
+const portalRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/portal",
+  component: () => withProtected(ParentPortalPage),
+});
+
+/* =========================
+   Platform Portal (super admin)
+========================= */
+
+const adminLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin",
+  component: () => withProtected(AdminLayout),
+});
+
+const adminIndexRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/",
+  component: () => withSuspense(AdminDashboardPage),
+});
+
+const adminOrganizationsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/organizations",
+  component: () => withSuspense(AdminOrganizationsPage),
+});
+
+const adminModelsRoute = createRoute({
+  getParentRoute: () => adminLayoutRoute,
+  path: "/models",
+  component: () => withSuspense(AdminModelsPage),
 });
 
 /* =========================
@@ -202,8 +259,17 @@ const routeTree = rootRoute.addChildren([
   clubsRoute,
   contactRoute,
   applyRoute,
+  trackRoute,
 
   loginRoute,
+
+  portalRoute,
+
+  adminLayoutRoute.addChildren([
+    adminIndexRoute,
+    adminOrganizationsRoute,
+    adminModelsRoute,
+  ]),
 
   dashboardLayoutRoute.addChildren([
     dashboardIndexRoute,

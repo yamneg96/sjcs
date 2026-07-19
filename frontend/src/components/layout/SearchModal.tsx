@@ -72,17 +72,32 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     [navigate, onClose]
   );
 
-  useEffect(() => {
+  /**
+   * Reset derived state by adjusting it during render (React's documented
+   * pattern) rather than in an effect — an effect would render once with stale
+   * state and then immediately re-render.
+   */
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setQuery("");
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
     }
-  }, [isOpen]);
+  }
 
-  useEffect(() => {
+  const [prevQuery, setPrevQuery] = useState(query);
+  if (query !== prevQuery) {
+    setPrevQuery(query);
     setSelectedIndex(0);
-  }, [query]);
+  }
+
+  // Focusing the input IS a real side effect, so it stays in an effect.
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(t);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;

@@ -8,6 +8,7 @@ export const registerDeviceSchema = z.object({
   abi: z.string().max(32).optional(),
   totalRAMGB: z.number().min(0).max(1024).optional(),
   storageFreeBytes: z.number().min(0).optional(),
+  expoPushToken: z.string().max(256).optional(),
   installedModels: z
     .array(
       z.object({

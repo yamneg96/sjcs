@@ -2,3 +2,6 @@
 !.env.development
 !.env.production
 !.env.preview
+
+!google-services.json
+!sjcsa-da0f7-firebase-adminsdk-fbsvc-6fc4dd1d3e.json

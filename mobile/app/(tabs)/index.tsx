@@ -2,10 +2,11 @@ import React from "react";
 import { View, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
+import { GradientView } from "@/components/ui/gradient-button";
 import { Text } from "@/components/ui/text";
 import { useAuthStore } from "@/store/auth.store";
 import { useStudyHistory } from "@/hooks/use-records";
-import { BookOpenIcon, BrainIcon, AwardIcon, SparklesIcon, CalendarIcon, CpuIcon } from "lucide-react-native";
+import { BookOpenIcon, BrainIcon, AwardIcon, SparklesIcon, CalendarIcon, CpuIcon, ScanTextIcon, MicIcon, LayersIcon } from "lucide-react-native";
 
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
@@ -21,23 +22,23 @@ export default function HomeScreen() {
       contentContainerStyle={styles.container}
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
     >
-      {/* Hero Welcome Card */}
-      <View className="w-full bg-primary p-6 rounded-3xl mb-6 shadow-md shadow-primary/20 relative overflow-hidden">
+      {/* Hero Welcome Card — Leadership Gradient (red → blue) */}
+      <GradientView className="w-full p-6 rounded-3xl mb-6 shadow-md relative">
         <View className="z-10">
-          <Text className="text-secondary text-xs uppercase tracking-widest font-semibold mb-1">
+          <Text className="text-white/70 text-xs uppercase tracking-widest font-semibold mb-1">
             Student Workstation
           </Text>
           <Text className="text-white text-2xl font-bold font-headline mb-1">
-            Hi, {user?.fullName || "Julian Mercer"}
+            Hi, {user?.fullName || "there"}
           </Text>
-          <Text className="text-primary-foreground/80 text-xs font-mono">
-            ID: {user?.studentId || "SJCS001"} | Grade {user?.grade || 10}
+          <Text className="text-white/80 text-xs font-mono">
+            {user?.studentId ? `ID: ${user.studentId} | ` : ""}Grade {user?.grade || "—"}
           </Text>
         </View>
         <View className="absolute right-4 bottom-4 opacity-10">
           <BookOpenIcon size={120} color="#fff" />
         </View>
-      </View>
+      </GradientView>
 
       {/* Grid Statistics */}
       <View className="flex-row gap-4 mb-6">
@@ -88,18 +89,69 @@ export default function HomeScreen() {
         <Button
           variant="outline"
           className="h-16 justify-between items-center rounded-2xl px-4 border-border/60"
-          onPress={() => router.push("/(tabs)/exams")}
+          onPress={() => router.push("/quiz/setup" as never)}
         >
           <View className="flex-row items-center gap-3">
             <View className="bg-secondary/20 p-2 rounded-xl">
               <AwardIcon className="text-secondary size-5" />
             </View>
             <View className="items-start">
-              <Text className="text-sm font-bold text-foreground">Take Mock Exam</Text>
-              <Text className="text-xs text-muted-foreground">Dynamic quizzes on current syllabus</Text>
+              <Text className="text-sm font-bold text-foreground">Take a Quiz</Text>
+              <Text className="text-xs text-muted-foreground">Practice any topic — adapts to your grade</Text>
             </View>
           </View>
           <Text className="text-secondary text-xs font-semibold">Take →</Text>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-16 justify-between items-center rounded-2xl px-4 border-border/60"
+          onPress={() => router.push("/flashcards" as never)}
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="bg-primary/10 p-2 rounded-xl">
+              <LayersIcon className="text-primary size-5" />
+            </View>
+            <View className="items-start">
+              <Text className="text-sm font-bold text-foreground">Flashcards</Text>
+              <Text className="text-xs text-muted-foreground">Spaced repetition — works offline</Text>
+            </View>
+          </View>
+          <Text className="text-primary text-xs font-semibold">Review →</Text>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-16 justify-between items-center rounded-2xl px-4 border-border/60"
+          onPress={() => router.push("/voice" as never)}
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="bg-secondary/20 p-2 rounded-xl">
+              <MicIcon className="text-secondary size-5" />
+            </View>
+            <View className="items-start">
+              <Text className="text-sm font-bold text-foreground">Voice Tutor</Text>
+              <Text className="text-xs text-muted-foreground">Ask out loud in English or Amharic</Text>
+            </View>
+          </View>
+          <Text className="text-secondary text-xs font-semibold">Speak →</Text>
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-16 justify-between items-center rounded-2xl px-4 border-border/60"
+          onPress={() => router.push("/scan" as never)}
+        >
+          <View className="flex-row items-center gap-3">
+            <View className="bg-secondary/20 p-2 rounded-xl">
+              <ScanTextIcon className="text-secondary size-5" />
+            </View>
+            <View className="items-start">
+              <Text className="text-sm font-bold text-foreground">Scan Homework</Text>
+              <Text className="text-xs text-muted-foreground">Read a question with your camera</Text>
+            </View>
+          </View>
+          <Text className="text-secondary text-xs font-semibold">Scan →</Text>
         </Button>
 
         <Button

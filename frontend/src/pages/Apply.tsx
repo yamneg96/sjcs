@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import { Link } from "@tanstack/react-router";
 import { useSubmitPublicApplication } from "@/hooks/use-admissions";
 import type { SubmitApplicationPayload } from "@/types/api.types";
@@ -68,8 +69,8 @@ export default function ApplyPage() {
       const result = await submitApp({ orgSlug: ORG_SLUG, data: payload });
       setRefId(result._id);
       setSubmitted(true);
-    } catch (err: any) {
-      alert("Submission failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Submission failed: " + getErrorMessage(err));
     }
   };
 

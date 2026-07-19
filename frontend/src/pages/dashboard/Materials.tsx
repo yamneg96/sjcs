@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import { useSubjects } from "@/hooks/use-subjects";
 import { useMaterials, useCreateMaterial, useDeleteMaterial, useUploadFile } from "@/hooks/use-materials";
 import type { MaterialType } from "@/types/api.types";
@@ -63,8 +64,8 @@ export default function MaterialsPage() {
       setFile(null);
       setDirectLink("");
       setUploadProgress("");
-    } catch (err: any) {
-      alert("Failed to publish resource: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to publish resource: " + getErrorMessage(err));
     }
   };
 
@@ -74,8 +75,8 @@ export default function MaterialsPage() {
     try {
       await deleteMaterial(id);
       alert("Material removed.");
-    } catch (err: any) {
-      alert("Failed to delete lesson material: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to delete lesson material: " + getErrorMessage(err));
     }
   };
 

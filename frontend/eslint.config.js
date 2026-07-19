@@ -20,4 +20,17 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    /**
+     * `react-refresh/only-export-components` guards Fast Refresh, which needs a
+     * module to export components and nothing else. Two files legitimately
+     * break that rule and are not Fast-Refresh targets:
+     *   - router.tsx: declares lazy() route components alongside the `router`
+     *   - ui/button.tsx: exports `buttonVariants` beside Button (shadcn convention)
+     */
+    files: ['src/router.tsx', 'src/components/ui/*.tsx'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])

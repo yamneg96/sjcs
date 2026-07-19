@@ -18,6 +18,14 @@ export function useAdmission(admissionId: string) {
   });
 }
 
+/** Public application tracking (reference + email). */
+export function useTrackApplication() {
+  return useMutation({
+    mutationFn: ({ orgSlug, reference, email }: { orgSlug: string; reference: string; email: string }) =>
+      admissionsService.track(orgSlug, reference, email).then((r) => r.data.data),
+  });
+}
+
 export function useSubmitPublicApplication() {
   return useMutation({
     mutationFn: ({ orgSlug, data }: { orgSlug: string; data: SubmitApplicationPayload }) =>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import { useAdmissions, useUpdateAdmissionStatus, useAddDocument } from "@/hooks/use-admissions";
 import { useUploadFile } from "@/hooks/use-materials";
 import type { AdmissionStatus, IAdmission, IAdmissionDocument } from "@/types/api.types";
@@ -53,8 +54,8 @@ export default function OrgAdmissionsPage() {
         },
       });
       alert("Application status updated and notifications sent successfully!");
-    } catch (err: any) {
-      alert("Failed to update: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to update: " + getErrorMessage(err));
     }
   };
 
@@ -80,8 +81,8 @@ export default function OrgAdmissionsPage() {
       });
 
       alert("Dossier attachment registered successfully!");
-    } catch (err: any) {
-      alert("Document registration failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Document registration failed: " + getErrorMessage(err));
     } finally {
       setUploadingDoc(false);
     }

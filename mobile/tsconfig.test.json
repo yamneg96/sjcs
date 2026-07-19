@@ -1,0 +1,9 @@
+{
+  // Test-only config: keeps jest globals out of the app's tsconfig, so app
+  // code can't accidentally reference describe/it/expect.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"]
+  },
+  "include": ["modules/**/*.test.ts", "modules/**/*.ts"]
+}

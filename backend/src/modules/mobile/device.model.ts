@@ -15,6 +15,8 @@ export interface IDevice extends Document {
   abi?: string;
   totalRAMGB?: number;
   storageFreeBytes?: number;
+  /** Expo push token — the delivery address for notifications (§23). */
+  expoPushToken?: string;
   installedModels: { modelId: string; version: string }[];
   lastSeenAt: Date;
   createdAt: Date;
@@ -31,6 +33,7 @@ const deviceSchema = new Schema<IDevice>(
     abi: { type: String },
     totalRAMGB: { type: Number },
     storageFreeBytes: { type: Number },
+    expoPushToken: { type: String },
     installedModels: {
       type: [
         {

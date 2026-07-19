@@ -8,14 +8,20 @@ import {
   resetStudentPassword,
   listTeachers,
   listStudents,
+  getMyChildren,
 } from "./member.controller";
 import { protect, authorize } from "../../middleware/auth.middleware";
 import { UserRole } from "../../shared/types/auth.types";
 
 const router = Router();
 
-// Restrict all member management endpoints to OrgOwner and OrgAdmin
 router.use(protect);
+
+// Parent portal — registered BEFORE the org-admin guard below so parents
+// (who are not org admins) can read their own children.
+router.get("/my-children", authorize(UserRole.PARENT), getMyChildren);
+
+// Restrict the remaining member management endpoints to OrgOwner and OrgAdmin
 router.use(authorize(UserRole.ORG_OWNER, UserRole.ORG_ADMIN));
 
 // Single member additions

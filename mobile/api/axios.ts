@@ -1,8 +1,9 @@
 import axios from "axios";
 import { useAuthStore } from "../store/auth.store";
 
-// Use local host machine IP dynamically set by get-ip.js or fallback to standard ports
-const baseURL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+// Use local host machine IP dynamically set by get-ip.js or fallback to standard ports.
+// NOTE: the backend mounts every route at /api/* directly — no /v1 segment.
+const baseURL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export const api = axios.create({
   baseURL,

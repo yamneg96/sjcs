@@ -168,6 +168,19 @@ export class MemberService {
   }
 
   /**
+   * Parent portal: the students linked to a parent via guardianIds (§32).
+   */
+  static async getMyChildren(tenantId: string, parentId: string): Promise<IUser[]> {
+    return User.find({
+      tenantId,
+      role: UserRole.STUDENT,
+      guardianIds: parentId,
+    })
+      .select("fullName grade admissionNo studentId sectionId status")
+      .lean() as unknown as IUser[];
+  }
+
+  /**
    * List members by role with pagination
    */
   static async listMembers(

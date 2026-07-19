@@ -58,6 +58,54 @@ export class AdmissionService {
   }
 
   /**
+   * PUBLIC application tracking (§29) — a parent checks their application
+   * status with the reference + the email they applied with. Deliberately
+   * minimal: returns only status/timeline info, never documents, reviewer
+   * notes, or other applicants' data. Requires BOTH the reference and the
+   * matching email so the reference alone can't be enumerated.
+   */
+  static async trackApplication(
+    tenantId: string,
+    reference: string,
+    email: string
+  ): Promise<{
+    reference: string;
+    studentName: string;
+    gradeAppliedFor: number;
+    status: AdmissionStatus;
+    submittedAt: Date;
+    interviewDate?: Date;
+    interviewTime?: string;
+    enrolled: boolean;
+  }> {
+    // Invalid reference format → same generic error as "not found" (no probing).
+    if (!mongoose.Types.ObjectId.isValid(reference)) {
+      throw new NotFoundError("No application found with those details");
+    }
+
+    const admission = await Admission.findOne({
+      _id: reference,
+      tenantId,
+      parentEmail: email.trim().toLowerCase(),
+    }).lean();
+
+    if (!admission) {
+      throw new NotFoundError("No application found with those details");
+    }
+
+    return {
+      reference: admission._id.toString(),
+      studentName: `${admission.studentFirstName} ${admission.studentLastName}`,
+      gradeAppliedFor: admission.gradeAppliedFor,
+      status: admission.status,
+      submittedAt: admission.createdAt,
+      interviewDate: admission.interviewDate,
+      interviewTime: admission.interviewTime,
+      enrolled: !!admission.enrolledStudentId,
+    };
+  }
+
+  /**
    * Updates an admission status with state machine validation.
    * Triggers email notifications on status transitions.
    */

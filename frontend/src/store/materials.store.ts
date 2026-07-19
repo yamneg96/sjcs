@@ -1,7 +1,9 @@
 import { create } from "zustand";
+import { getErrorMessage } from "@/lib/errors";
+import type { IMaterial } from "@/types/api.types";
 
 interface MaterialsState {
-  materials: any[];
+  materials: IMaterial[];
   isLoading: boolean;
   error: string | null;
   uploadMaterial: (file: File, grade: number, subject: string, title?: string) => Promise<void>;
@@ -35,8 +37,8 @@ export const useMaterialsStore = create<MaterialsState>((set) => ({
         throw new Error(d.message || "Upload failed");
       }
       set({ isLoading: false });
-    } catch (err: any) {
-      set({ error: err.message, isLoading: false });
+    } catch (err) {
+      set({ error: getErrorMessage(err), isLoading: false });
       throw err;
     }
   }

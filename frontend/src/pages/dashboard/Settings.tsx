@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import { useAuthStore } from "@/store/auth.store";
 import { useMyOrganization, useUpdateOrganization } from "@/hooks/use-organization";
 
@@ -10,14 +11,12 @@ export default function SettingsPage() {
   const { mutateAsync: updateOrg } = useUpdateOrganization();
 
   // Local config states
-  const [themeMode, setThemeMode] = useState<"light" | "dark">("dark");
+  // Read the live DOM theme once, at mount, via a lazy initializer — no effect
+  // needed (and no first-render flash of the wrong value).
+  const [themeMode, setThemeMode] = useState<"light" | "dark">(() =>
+    document.documentElement.classList.contains("dark") ? "dark" : "light"
+  );
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-
-  // Sync theme toggle with DOM theme classes
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setThemeMode(isDark ? "dark" : "light");
-  }, []);
 
   const handleToggleTheme = () => {
     const nextTheme = themeMode === "dark" ? "light" : "dark";
@@ -46,8 +45,8 @@ export default function SettingsPage() {
         });
       }
       alert("Settings preferences synchronized successfully!");
-    } catch (err: any) {
-      alert("Failed to sync settings: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to sync settings: " + getErrorMessage(err));
     }
   };
 

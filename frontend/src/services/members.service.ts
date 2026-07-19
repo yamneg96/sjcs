@@ -8,7 +8,21 @@ import type {
   CreateTeacherPayload,
 } from "@/types/api.types";
 
+/** A child as returned by the parent portal (§32). */
+export interface IChild {
+  _id: string;
+  fullName: string;
+  grade?: number;
+  studentId?: string;
+  admissionNo?: string;
+  sectionId?: string;
+  status: string;
+}
+
 export const membersService = {
+  /** Parent portal: students linked to the signed-in parent. */
+  myChildren: () => api.get<ApiResponse<IChild[]>>("/members/my-children"),
+
   // ── Students ──
   listStudents: (page = 1, limit = 10, search = "") =>
     api.get<ApiResponse<PaginatedResponse<IMember>>>("/members/students", {

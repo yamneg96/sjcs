@@ -60,8 +60,17 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Compound index to ensure studentId is unique per organization/tenant
-userSchema.index({ tenantId: 1, studentId: 1 }, { unique: true, sparse: true });
+/**
+ * studentId must be unique per tenant — but ONLY for users that actually have
+ * one (students). A `sparse` compound index does NOT work here: it still
+ * indexes a document when any key is present, so every staff/parent row (which
+ * has tenantId but no studentId) collides on `studentId: null` and the second
+ * one is rejected. A partial index scopes uniqueness to real studentIds.
+ */
+userSchema.index(
+  { tenantId: 1, studentId: 1 },
+  { unique: true, partialFilterExpression: { studentId: { $type: "string" } } }
+);
 
 userSchema.plugin(baseSchemaPlugin);
 

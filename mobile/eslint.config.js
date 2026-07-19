@@ -7,6 +7,13 @@ module.exports = defineConfig([
   globalIgnores(["dist", ".expo", "node_modules"]),
   ...expoConfig,
   {
+    // Node build scripts (not app code) — CommonJS globals are legitimate here.
+    files: ["*.js"],
+    languageOptions: {
+      globals: { __dirname: "readonly", require: "readonly", module: "writable", process: "readonly" },
+    },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     plugins: { "react-native": reactNative },
     rules: {

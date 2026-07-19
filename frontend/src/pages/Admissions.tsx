@@ -48,6 +48,12 @@ export default function AdmissionsPage() {
               <Link to="/apply" className="leadership-gradient text-sjcs-on-primary px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase shadow-xl">Start Application</Link>
               <Link to="/contact" className="bg-sjcs-surface-container-highest text-sjcs-on-surface px-10 py-4 rounded-xl font-label text-sm font-bold tracking-widest uppercase">Schedule a Tour</Link>
             </div>
+            <p className="text-sjcs-on-surface-variant text-sm mt-8">
+              Already applied?{" "}
+              <Link to="/track" className="text-sjcs-secondary font-medium underline-offset-4 hover:underline">
+                Track your application
+              </Link>
+            </p>
           </div>
         </div>
       </section>

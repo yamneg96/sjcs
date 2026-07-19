@@ -5,8 +5,11 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["./*"]
     }
   },
-  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"]
+  "include": ["**/*.ts", "**/*.tsx", ".expo/types/**/*.ts", "expo-env.d.ts", "nativewind-env.d.ts"],
+  // Tests are typechecked by tsconfig.test.json (which supplies the jest
+  // globals); keeping them out here stops app code seeing describe/it/expect.
+  "exclude": ["node_modules", "**/*.test.ts", "**/*.test.tsx"]
 }

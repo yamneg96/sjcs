@@ -8,22 +8,15 @@ export default function AdminLayout() {
 
   const handleLogout = () => {
     logout();
-    router.navigate({ to: "/lis/login" });
+    router.navigate({ to: "/login" });
   };
 
+  // Only surfaces backed by real platform-scoped endpoints are listed here.
   const navLinks = [
-    { name: "Dashboard", path: "/admin", icon: "dashboard" },
-    { name: "User Management", path: "/admin/users", icon: "group" },
-    { name: "Student Management", path: "/admin/students", icon: "school" },
-    { name: "Teacher Management", path: "/admin/teachers", icon: "co_present" },
-    { name: "Materials & RAG", path: "/admin/materials", icon: "folder_open" },
-    { name: "AI Monitoring (LIS)", path: "/admin/lis", icon: "psychology" },
-    { name: "Payments & Finance", path: "/admin/finance", icon: "payments" },
-    { name: "Academic Management", path: "/admin/academic", icon: "menu_book" },
-    { name: "Reports & Analytics", path: "/admin/reports", icon: "analytics" },
-    { name: "System Settings", path: "/admin/settings", icon: "settings" },
-    { name: "Cardinal Crest", path: "/admin/cardinal-crest", icon: "newspaper" },
-  ];
+    { name: "Overview", path: "/admin", icon: "dashboard" },
+    { name: "Organizations", path: "/admin/organizations", icon: "corporate_fare" },
+    { name: "AI Models", path: "/admin/models", icon: "psychology" },
+  ] as const;
 
   return (
     <div className="bg-sjcs-surface text-sjcs-on-surface antialiased font-body min-h-screen">
@@ -111,7 +104,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Content Canvas */}
-        <div className="flex-1">
+        <div className="flex-1 p-8">
           <Outlet />
         </div>
       </main>

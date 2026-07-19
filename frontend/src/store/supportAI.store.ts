@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getErrorMessage } from "@/lib/errors";
 import api from "@/lib/api";
 
 interface ChatMessage {
@@ -60,13 +61,16 @@ export const useSupportAIStore = create<SupportAIState>((set) => ({
         messages: [...state.messages, aiMsg],
         isLoading: false,
       }));
-    } catch (error: any) {
+    } catch (error) {
       console.error("Support AI Error:", error);
       
       const errorMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: error.response?.data?.message || "I'm having trouble connecting. Please try again or contact the office.",
+        content: getErrorMessage(
+          error,
+          "I'm having trouble connecting. Please try again or contact the office."
+        ),
         timestamp: new Date().toISOString(),
       };
 

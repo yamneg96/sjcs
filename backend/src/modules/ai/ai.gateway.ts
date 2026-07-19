@@ -2,7 +2,13 @@ import axios from "axios";
 import Groq from "groq-sdk";
 import OpenAI from "openai";
 import Organization, { IOrganization } from "../organizations/organization.model";
-import { IAIRequestOptions, IAIResponse, IAIEmbeddingResponse } from "./ai.types";
+import {
+  IAIRequestOptions,
+  IAIResponse,
+  IAIEmbeddingResponse,
+  IAITranscriptionOptions,
+  IAITranscriptionResponse,
+} from "./ai.types";
 import { env } from "../../config/env";
 import { ForbiddenError, BadRequestError } from "../../shared/errors/errors";
 import {
@@ -282,6 +288,77 @@ export class AIGateway {
       : formatEducationalResponse(result.text);
 
     return { ...result, text, moderationFlagged: outputMod.flagged };
+  }
+
+  /**
+   * Speech-to-text (§24.2) — the ONLY transcription path any module may use.
+   * Provider order mirrors the architecture: Ethio-ASR (the named Amharic/
+   * English service) when configured, then a Whisper-class provider, then an
+   * honest stub so the voice pipeline degrades instead of 500-ing.
+   *
+   * Audio arrives as a Buffer; the raw bytes are never persisted here.
+   */
+  static async transcribe(
+    audio: Buffer,
+    options: IAITranscriptionOptions = {}
+  ): Promise<IAITranscriptionResponse> {
+    const fileName = options.fileName || "speech.m4a";
+    const mimeType = options.mimeType || "audio/m4a";
+
+    // 1. Ethio-ASR (preferred: tuned for Amharic + English).
+    if (env.ETHIO_ASR_URL) {
+      try {
+        const form = new FormData();
+        form.append("file", new Blob([new Uint8Array(audio)], { type: mimeType }), fileName);
+        if (options.language) form.append("language", options.language);
+
+        const response = await axios.post(env.ETHIO_ASR_URL, form, {
+          headers: env.ETHIO_ASR_API_KEY
+            ? { Authorization: `Bearer ${env.ETHIO_ASR_API_KEY}` }
+            : undefined,
+          timeout: 30000,
+        });
+
+        const text = response.data?.text ?? response.data?.transcript ?? "";
+        if (text) {
+          return {
+            text,
+            language: response.data?.language ?? options.language,
+            provider: "ethio-asr",
+            isFallback: false,
+          };
+        }
+      } catch (err: any) {
+        console.warn(`💥 Ethio-ASR failed: ${err.message}. Falling back…`);
+      }
+    }
+
+    // 2. Whisper-class fallback (Groq hosts whisper-large-v3).
+    if (env.GROQ_API_KEY) {
+      try {
+        const groq = new Groq({ apiKey: env.GROQ_API_KEY });
+        const transcription = await groq.audio.transcriptions.create({
+          file: new File([new Uint8Array(audio)], fileName, { type: mimeType }),
+          model: "whisper-large-v3",
+          language: options.language,
+        });
+        return {
+          text: transcription.text || "",
+          language: options.language,
+          provider: "whisper-large-v3",
+          isFallback: false,
+        };
+      } catch (err: any) {
+        console.warn(`💥 Whisper fallback failed: ${err.message}`);
+      }
+    }
+
+    // 3. No ASR configured — say so rather than pretending to transcribe.
+    return {
+      text: "",
+      provider: "none",
+      isFallback: true,
+    };
   }
 
   /**

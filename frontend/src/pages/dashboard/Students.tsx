@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getErrorMessage } from "@/lib/errors";
 import {
   useStudents,
   useCreateStudent,
@@ -56,8 +57,8 @@ export default function OrgStudentsPage() {
       setAddStudentId("");
       setAddGrade(9);
       setShowAddForm(false);
-    } catch (err: any) {
-      alert("Registration failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Registration failed: " + getErrorMessage(err));
     }
   };
 
@@ -89,8 +90,8 @@ export default function OrgStudentsPage() {
       alert(res.data.message || `Imported ${res.data.data?.importedCount || list.length} students!`);
       setCsvText("");
       setShowImportForm(false);
-    } catch (err: any) {
-      alert("Import failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Import failed: " + getErrorMessage(err));
     }
   };
 
@@ -106,8 +107,8 @@ export default function OrgStudentsPage() {
         await suspendMember(student._id);
       }
       alert(`Account status updated successfully.`);
-    } catch (err: any) {
-      alert("Failed to change status: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Failed to change status: " + getErrorMessage(err));
     }
   };
 
@@ -123,8 +124,8 @@ export default function OrgStudentsPage() {
       alert(`Access credentials reset for ${showResetForm.fullName}`);
       setNewPassword("");
       setShowResetForm(null);
-    } catch (err: any) {
-      alert("Password override failed: " + (err.extractedMessage || err.message));
+    } catch (err) {
+      alert("Password override failed: " + getErrorMessage(err));
     }
   };
 

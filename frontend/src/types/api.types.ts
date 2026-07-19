@@ -19,11 +19,15 @@ export interface PaginatedResponse<T> {
 }
 
 // --- Auth ---
+// Must mirror the backend enum (backend/src/shared/types/auth.types.ts).
 export const UserRole = {
   SUPER_ADMIN: "SuperAdmin",
   ORG_OWNER: "OrganizationOwner",
   ORG_ADMIN: "OrganizationAdmin",
+  DIRECTOR: "Director",
+  REGISTRAR: "Registrar",
   TEACHER: "Teacher",
+  PARENT: "Parent",
   STUDENT: "Student",
   INDIVIDUAL: "Individual",
 } as const;

@@ -1,11 +1,18 @@
+// Must mirror the backend enum (backend/src/shared/types/auth.types.ts).
 export enum UserRole {
   SUPER_ADMIN = "SuperAdmin",
   ORG_OWNER = "OrganizationOwner",
   ORG_ADMIN = "OrganizationAdmin",
+  DIRECTOR = "Director",
+  REGISTRAR = "Registrar",
   TEACHER = "Teacher",
+  PARENT = "Parent",
   STUDENT = "Student",
   INDIVIDUAL = "Individual",
 }
+
+/** Roles the mobile app's UI is actually built for (§7.1/§38 — the student tutor). */
+export const MOBILE_SUPPORTED_ROLES = [UserRole.STUDENT, UserRole.INDIVIDUAL] as const;
 
 export interface ApiResponse<T> {
   success: boolean;

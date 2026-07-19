@@ -1,12 +1,15 @@
 import app from "./app";
 import { env } from "./config/env";
 import { startPublishingScheduler, stopPublishingScheduler } from "./modules/results/publishing.scheduler";
+import { registerNotificationListeners } from "./modules/notifications/notification.listeners";
 
 const HOST = '0.0.0.0'
 const server = app.listen(env.PORT, HOST, () => {
   console.log(`🚀 Lumora Platform Backend running in ${env.NODE_ENV} mode on port ${env.PORT}`);
   // Start the results release scheduler (flips SCHEDULED → PUBLISHED at releaseAt).
   startPublishingScheduler();
+  // Domain-event fan-out (results.published → parents/students).
+  registerNotificationListeners();
 });
 
 // Handle unhandled promise rejections

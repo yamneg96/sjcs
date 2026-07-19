@@ -1,5 +1,22 @@
 import nodemailer from "nodemailer";
+import axios from "axios";
+import mongoose from "mongoose";
 import { env } from "../../config/env";
+import Notification, { NotificationKind } from "./notification.model";
+import Device from "../mobile/device.model";
+import { logger } from "../../shared/utils/logger";
+
+const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
+
+export interface INotifyInput {
+  userId: string | mongoose.Types.ObjectId;
+  tenantId?: string;
+  kind: NotificationKind;
+  title: string;
+  body: string;
+  link?: string;
+  data?: Record<string, unknown>;
+}
 
 export class NotificationService {
   // Primary (Brevo SMTP Relay)
@@ -78,6 +95,75 @@ export class NotificationService {
   /**
    * Dispatches an SMS notification (stubbed provider).
    */
+  /**
+   * Records an in-app notification and pushes it to the user's devices.
+   * Best-effort by design: a push failure must never break the flow that
+   * triggered it (e.g. a results release), so this never throws.
+   */
+  static async notify(input: INotifyInput): Promise<void> {
+    try {
+      await Notification.create({
+        userId: input.userId,
+        tenantId: input.tenantId,
+        kind: input.kind,
+        title: input.title,
+        body: input.body,
+        link: input.link,
+        data: input.data,
+      });
+      await this.sendPush(input);
+    } catch (err) {
+      logger.error("Failed to record/send notification", {
+        userId: String(input.userId),
+        kind: input.kind,
+        message: (err as Error).message,
+      });
+    }
+  }
+
+  /** Fan-out helper: notify many users concurrently, tolerating failures. */
+  static async notifyMany(inputs: INotifyInput[]): Promise<number> {
+    const results = await Promise.allSettled(inputs.map((i) => this.notify(i)));
+    return results.filter((r) => r.status === "fulfilled").length;
+  }
+
+  /**
+   * Sends an Expo push to every registered device for the user. Devices
+   * without a token (or with an invalid one) are skipped silently.
+   */
+  private static async sendPush(input: INotifyInput): Promise<void> {
+    const devices = await Device.find({
+      userId: input.userId,
+      expoPushToken: { $exists: true, $ne: null },
+    }).lean();
+
+    const messages = devices
+      .map((d) => d.expoPushToken)
+      .filter((t): t is string => !!t && t.startsWith("ExponentPushToken"))
+      .map((to) => ({
+        to,
+        title: input.title,
+        body: input.body,
+        data: { link: input.link, ...input.data },
+        sound: "default" as const,
+      }));
+
+    if (messages.length === 0) return;
+
+    try {
+      // Expo accepts up to 100 messages per request.
+      for (let i = 0; i < messages.length; i += 100) {
+        await axios.post(EXPO_PUSH_URL, messages.slice(i, i + 100), {
+          headers: { "Content-Type": "application/json" },
+          timeout: 10000,
+        });
+      }
+      logger.info("Push notifications sent", { count: messages.length, kind: input.kind });
+    } catch (err) {
+      logger.warn("Expo push delivery failed", { message: (err as Error).message });
+    }
+  }
+
   static async sendSMS(to: string, message: string): Promise<boolean> {
     console.log(`[SMS SEND] To: ${to}, Content: ${message}`);
     return true;

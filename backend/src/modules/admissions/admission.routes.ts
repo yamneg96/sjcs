@@ -44,6 +44,29 @@ router.post(
   })
 );
 
+/**
+ * PUBLIC ROUTE — application status tracking. Requires the reference AND the
+ * applying email; returns status only (no documents / reviewer notes).
+ */
+router.get(
+  "/public/:orgSlug/track",
+  asyncHandler(async (req: Request, res: Response) => {
+    const { orgSlug } = req.params;
+    const reference = (req.query.reference as string) || "";
+    const email = (req.query.email as string) || "";
+
+    if (!reference || !email) {
+      throw new BadRequestError("reference and email are required");
+    }
+
+    const org = await Organization.findOne({ slug: orgSlug }).lean();
+    if (!org) throw new NotFoundError("Organization not found");
+
+    const result = await AdmissionService.trackApplication(org.tenantId, reference, email);
+    sendSuccess(res, result, "Application status retrieved");
+  })
+);
+
 // ── Protected routes (require JWT) ──
 router.use(protect);
 

@@ -39,7 +39,7 @@ export async function fetchModelCatalog(profile?: DeviceProfile) {
 }
 
 export async function registerDevice(
-  profile: DeviceProfile,
+  profile: DeviceProfile & { expoPushToken?: string },
   installedModels: { modelId: string; version: string }[]
 ) {
   const response = await api.post<ApiResponse<{ device: unknown }>>("/mobile/devices", {
@@ -60,6 +60,40 @@ export async function cloudComplete(input: {
     "/mobile/ai/complete",
     input,
     { timeout: 60000 }
+  );
+  return response.data;
+}
+
+export interface TranscriptionResponse {
+  text: string;
+  language?: string;
+  provider: string;
+}
+
+/**
+ * Uploads a recorded clip for transcription (§44). Voice needs connectivity in
+ * v1 — Ethio-ASR is a cloud service — and the UI states that honestly.
+ */
+export async function transcribeAudio(
+  fileUri: string,
+  language?: "am" | "en"
+): Promise<ApiResponse<TranscriptionResponse>> {
+  const form = new FormData();
+  // React Native's FormData takes this {uri,name,type} shape for file parts.
+  form.append("audio", {
+    uri: fileUri,
+    name: "speech.m4a",
+    type: "audio/m4a",
+  } as unknown as Blob);
+  if (language) form.append("language", language);
+
+  const response = await api.post<ApiResponse<TranscriptionResponse>>(
+    "/mobile/ai/transcribe",
+    form,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 60000,
+    }
   );
   return response.data;
 }
